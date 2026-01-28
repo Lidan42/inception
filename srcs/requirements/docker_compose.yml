@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mariadb:
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+    container_name: mariadb
+    networks:
+      - inception
+    restart: on-failure
+    env_file: ../.env
+    secrets:
+      - db_password
+      - db_root_password
+    volumes:
+      - mariadb:/var/lib/mysql
+  nginx:
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    networks:
+      - inception
+    restart: on-failure
+    env_file: ../.env
+    volumes:
+      - wordpress:/var/www/wordpress
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+  wordpress:
+    build:
+      context: requirements/wordpress
+      dockerfile: Dockerfile
+    container_name: wordpress
+    networks:
+      - inception
+    restart: on-failure
+    env_file: ../.env
+    volumes:
+      - wordpress:/var/www/wordpress
+    depends_on:
+      - mariadb
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
+
+networks:
+  inception:
+    driver: bridge
+
+volumes:
+  mariadb:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dbhujoo/data/mariadb
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dbhujoo/data/wordpress
+
+secrets:
+  db_password:
+    file: ../../secrets/db_password.txt
+  db_root_password:
+    file: ../../secrets/db_root_password.txt
+  wp_admin_password:
+    file: ../../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../../secrets/wp_user_password.txt
