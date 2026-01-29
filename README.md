@@ -1,409 +1,468 @@
 *This project has been created as part of the 42 curriculum by dbhujoo*
 
+---
+
+# Inception
+
+A Docker-based web infrastructure project implementing a complete LEMP stack with security best practices.
+
+---
+
+## Table of Contents
+
+1. [Description](#description)
+2. [Features](#features)
+3. [Instructions](#instructions)
+4. [Project Description](#project-description)
+5. [Technical Choices & Comparisons](#technical-choices--comparisons)
+6. [Resources](#resources)
+7. [AI Usage Declaration](#ai-usage-declaration)
+
+---
+
 ## Description
 
-**Inception** is a system administration and Docker containerization project that focuses on building a complete web infrastructure using Docker containers. The goal is to set up a small infrastructure composed of different services following specific rules and best practices.
-
-This project demonstrates the ability to:
-- Virtualize multiple Docker containers in a personal virtual machine
-- Configure each service to run in dedicated containers
-- Implement proper networking and volume management
-- Ensure security through environment variables and secrets management
-- Build custom Docker images from scratch (using penultimate stable versions)
-
-The infrastructure includes:
-- **NGINX** with TLSv1.2 or TLSv1.3 only
-- **WordPress** with php-fpm (without nginx)
-- **MariaDB** database
-- Persistent volumes for database and website files
-- A docker network for inter-container communication
-
-**Instructions**
-
-section containing any relevant information about compilation,
-installation, and/or execution.
-
-
-
-
-**Resources**
-
-section listing classic references related to the topic (documen-
-tation, articles, tutorials, etc.), as well as a description of how AI was used —
-specifying for which tasks and which parts of the project.
-
-Additional sections may be required depending on the project (e.g., usage
-examples, feature list, technical choices, etc.).
-
-
-***1 - Docker definiton : ***
-
-*“Docker is an open platform for developing, shipping, and running applications.Docker enables you to separate your applications from your infrastructure so you can deliver software quickly. With Docker, you can manage your infrastructure in the same ways you manage your applications. By taking advantage of Docker's methodologies for shipping, testing, and deploying code, you can significantly reduce the delay between writing code and running it in production”*
-*link : https://docs.docker.com/get-started/overview/*
-
-
-***AI use :***
-
-In this project, AI was firstly use to search documentation about dockers : their use, their definition, understand the subject to be able to create a plan in order to start the inception project.
-
-
-
-
-**Project description**
-
-section must also explain the use of Docker and the sources
-included in the project. It must indicate the main design choices, as well as a
-comparison between:
-
-***1 - Use of a docker :***
-
-L’objectif principal est **la portabilité, la reproductibilité et la simplification du déploiement d'une application** (faire tourner une application, avec le bon environnement, sur une autre machine que celle où elle a été développée, sans la reconfigurer manuellement.)
-
-*"Docker streamlines the development lifecycle by allowing developers to work in standardized environments using local containers which provide your applications and services. Containers are great for continuous integration and continuous delivery (CI/CD) workflows."*
-*"Consider the following example scenario:"*
-*"Your developers write code locally and share their work with their colleagues using Docker containers."*
-*"They use Docker to push their applications into a test environment and run automated and manual tests."*
-*"When developers find bugs, they can fix them in the development environment and redeploy them to the test environment for testing and validation."*
-*"When testing is complete, getting the fix to the customer is as simple as pushing the updated image to the production environment."*
-*link : https://docs.docker.com/get-started/overview/*
-
-“Docker simplifies deployment by allowing developers to deploy applications quickly and consistently.”
-link : https://aws.amazon.com/docker/
-
-Avant Docker (déploiement “classique”)
-configuration manuelle des serveurs
-dépendances incompatibles
-différences entre dev / prod
-erreurs humaines
-
-Avec Docker
-copier une image
-lancer un conteneur
-
-***2 - NGINX definition:***
-
-NGINX is an open-source server software primarily used as a web server and reverse proxy.
-
-NGINX is a program that runs on a server and handles receiving requests from clients (browsers, APIs, etc.) and responding to them appropriately.
-
-**How it works:**
-
-When you type a URL in your browser:
-1. The browser sends an HTTP request
-2. NGINX receives this request
-3. NGINX decides what to do:
-   - Return a file (HTML, CSS, image, etc.)
-   - Forward the request to an application (PHP, Node.js, Python, etc.)
-   - Redirect to another server
-
-**Load Balancing:**
-
-NGINX can distribute requests across multiple servers.
-
-Objectives:
-- Prevent server overload
-- Improve availability
-
-**Key Features:**
-
-- High performance
-- Low memory consumption
-- Asynchronous/event-driven architecture
-- Widely used in production environments (high-traffic websites)
-
-**TLS Protocol:**
-
-TLSv1.2 and TLSv1.3
-
-These are two versions of the TLS protocol:
-
-| Version | Year | Key Features |
-|---------|------|--------------|
-| TLS 1.2 | 2008 | - Strong but slower encryption<br>- Complex key negotiation<br>- Supports many legacy algorithms |
-| TLS 1.3 | 2018 | - Faster and more secure<br>- Fewer legacy algorithms<br>- Simplified key exchange (faster handshake)<br>- Forward Secrecy enabled by default |
-
-***3 - MARIADB definition:***
-
-MariaDB is an open-source Relational DataBase Management System (RDBMS) that is a fork of MySQL.
-
-MariaDB is designed to store, organize, and retrieve data efficiently. It uses SQL (Structured Query Language) to manage and query data stored in tables.
-
-**How it works:**
-
-When an application needs to store or retrieve data:
-1. The application sends SQL queries to MariaDB
-2. MariaDB processes the query (INSERT, SELECT, UPDATE, DELETE)
-3. MariaDB returns the requested data or confirmation of the operation
-
-**Key Features:**
-
-- High performance and scalability
-- ACID compliance (Atomicity, Consistency, Isolation, Durability)
-- Support for multiple storage engines (InnoDB, Aria, etc.)
-- Compatible with MySQL (drop-in replacement)
-- Active community and regular updates
-- Advanced security features (user authentication, encryption, SSL/TLS)
-
-**Common Use Cases:**
-
-- Web applications (WordPress, Drupal, etc.)
-- E-commerce platforms
-- Content management systems
-- Data warehousing
-- Analytics and reporting
-
-**Why MariaDB over MySQL:**
-
-- Fully open-source (no proprietary modules)
-- Better performance in many scenarios
-- More storage engines available
-- Active development and faster release cycle
-- Community-driven development
-
-***4 - WORDPRESS definition:***
-
-WordPress is an open-source Content Management System (CMS) written in PHP and paired with a MySQL or MariaDB database.
-
-WordPress is the most popular website builder in the world, powering over 40% of all websites. It allows users to create and manage websites without extensive coding knowledge.
-
-**How it works:**
-
-WordPress architecture consists of three main components:
-1. **PHP-FPM** processes PHP code and generates dynamic content
-2. **MariaDB/MySQL** stores all website data (posts, users, settings)
-3. **Web Server (NGINX)** serves static files and forwards PHP requests to PHP-FPM
-
-**WordPress with PHP-FPM:**
-
-PHP-FPM (FastCGI Process Manager) is a preferred way to run PHP:
-- Separates PHP processing from the web server
-- Better performance and resource management
-- Allows independent scaling of PHP and web server
-- Communicates via TCP (port 9000) or Unix socket
-
-**Key Features:**
-
-- Intuitive admin dashboard
-- Extensive plugin ecosystem (60,000+ plugins)
-- Thousands of themes for customization
-- Built-in user management and roles
-- SEO-friendly structure
-- Multi-language support
-- RESTful API for headless implementations
-
-**Common Use Cases:**
-
-- Blogs and personal websites
-- Business and corporate websites
-- E-commerce (with WooCommerce)
-- Portfolios and galleries
-- News and magazine sites
-- Community forums and membership sites
-
-**Why WordPress:**
-
-- Free and open-source
-- Easy to install and configure
-- Large community and extensive documentation
-- Regular security updates
-- Flexible and highly customizable
-- No coding required for basic usage
-
-**WP-CLI:**
-
-WordPress Command Line Interface allows:
-- Automated installation and configuration
-- Plugin and theme management via scripts
-- Database operations without web interface
-- Perfect for Docker containerization
-
-***◦ Virtual Machines vs Docker***
-
-Une machine virtuelle :
-- virtualise le matériel
-- embarque un système d’exploitation complet (kernel + userland)
-- est plus lourde en ressources (RAM, CPU, stockage)
-
-“Virtual machines include a full copy of an operating system, one or more apps, necessary binaries and libraries.”
-
-Lien : https://docs.docker.com/get-started/overview/#containers-and-virtual-machines
-
-Un conteneur Docker :
--virtualise le système d’exploitation, pas le matériel
--partage le noyau de l’OS hôte
--n’embarque que l’application et ses dépendances
--est plus léger et plus rapide à démarrer
-
-“Containers share the host system’s kernel and isolate the application processes from the rest of the system.”
-Lien : https://docs.docker.com/get-started/overview/
-
-Synthetic comparison :
- -------------------------------------------------------------------------
-| Criteria       | Virtual Machines        | Docker                       |
-| -------------- | ----------------------- | ---------------------------- |
-| Virtualisation | Matériel                | OS                           |
-| OS embarqué    | Oui                     | Non                          |
-| Poids          | Élevé                   | Léger                        |
-| Démarrage      | Lent (secondes/minutes) | Très rapide (ms/s)           |
-| Isolation      | Forte                   | Suffisante pour l’applicatif |
- -------------------------------------------------------------------------
-
-
-***◦ Secrets vs Environment Variables***
-
-**Environment Variables:**
-
-Environment variables are key-value pairs passed to containers at runtime to configure application behavior.
-
-How they work:
-- Defined in `docker-compose.yml` or Dockerfile
-- Accessible within the container as system environment variables
-- Visible in container inspection (`docker inspect`)
-
-```yaml
-environment:
-  - DB_NAME=wordpress
-  - DB_USER=admin
+**Inception** is a system administration and Docker containerization project that focuses on building a complete web infrastructure using Docker containers within a virtual machine environment.
+
+### Project Goal
+
+The main objective is to set up a small but complete infrastructure composed of different services following specific rules and best practices:
+
+- **NGINX** container with TLSv1.2/TLSv1.3 only (serves as the single entry point via port 443)
+- **WordPress** container with PHP-FPM (without NGINX)
+- **MariaDB** container for database management
+- **Docker network** for secure inter-container communication
+- **Docker volumes** for persistent data storage
+
+### Key Learning Objectives
+
+This project demonstrates proficiency in:
+
+| Area                 | Skills Acquired                                              |
+|----------------------|--------------------------------------------------------------|
+| **Containerization** | Building custom Docker images from Debian base               |
+| **Networking**       | Configuring isolated Docker networks for secure communication|
+| **Security**         | Implementing TLS, secrets management, and proper isolation   |
+| **Infrastructure**   | Setting up a complete web stack from scratch                 |
+| **Automation**       | Using Makefile for build automation and orchestration        |
+
+**Source**: [Docker Overview](https://docs.docker.com/get-started/overview/)
+
+---
+
+## Features
+
+### Infrastructure Components
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         HOST MACHINE                             │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │                Docker Network: inception                    │ │
+│  │                                                             │ │
+│  │   ┌──────────┐     ┌─────────────┐     ┌──────────────┐   │ │
+│  │   │  NGINX   │────▶│  WordPress  │────▶│   MariaDB    │   │ │
+│  │   │  :443    │ PHP │  :9000      │ SQL │   :3306      │   │ │
+│  │   │  TLS 1.3 │ FPM │  PHP-FPM    │     │              │   │ │
+│  │   └────┬─────┘     └──────┬──────┘     └──────┬───────┘   │ │
+│  │        │                  │                   │            │ │
+│  └────────┼──────────────────┼───────────────────┼────────────┘ │
+│           │                  │                   │              │
+│           ▼                  ▼                   ▼              │
+│   ┌───────────────────────────────────────────────────────────┐ │
+│   │                    Persistent Volumes                      │ │
+│   │   /home/dbhujoo/data/wordpress    /home/dbhujoo/data/mariadb │
+│   └───────────────────────────────────────────────────────────┘ │
+│                              │                                   │
+└──────────────────────────────┼───────────────────────────────────┘
+                               │
+                        Port 443 (HTTPS)
+                               │
+                               ▼
+                         Client Browser
 ```
 
-**Docker Secrets:**
+### Service Details
 
-Secrets are encrypted data managed by Docker Swarm or external secret managers for sensitive information.
+| Service       | Base Image      | Port | Role                           |
+|---------------|-----------------|------|--------------------------------|
+| **NGINX**     | debian:bookworm | 443  | Reverse proxy, TLS termination |
+| **WordPress** | debian:bookworm | 9000 | PHP-FPM, CMS application       |
+| **MariaDB**   | debian:bookworm | 3306 | Relational database            |
 
-How they work:
-- Encrypted at rest and in transit
-- Only accessible to authorized services
-- Mounted as files in `/run/secrets/`
-- Not visible in environment variables or logs
+### Security Features
 
+- ✅ TLSv1.2 and TLSv1.3 only (no deprecated protocols)
+- ✅ Self-signed SSL certificates
+- ✅ Docker secrets for sensitive data
+- ✅ Isolated Docker network
+- ✅ No root process in containers (where applicable)
+- ✅ Minimal base images with security updates
+
+---
+
+## Instructions
+
+### Prerequisites
+
+| Requirement      | Minimum Version | Installation                                     |
+|------------------|-----------------|--------------------------------------------------|
+| Docker Engine    | 20.10+          | [Get Docker](https://docs.docker.com/get-docker/)|
+| Docker Compose   | 2.0+            | Included with Docker Desktop                     |
+| Make             | 4.0+            | `apt install make`                               |
+| Git              | 2.0+            | `apt install git`                                |
+
+**Verify installation:**
+```bash
+docker --version          # Docker version 24.0.0+
+docker compose version    # Docker Compose version v2.20.0+
+make --version           # GNU Make 4.3+
+```
+
+### Installation
+
+**1. Clone the repository:**
+```bash
+git clone <repository-url> inception
+cd inception
+```
+
+**2. Configure local domain:**
+```bash
+echo "127.0.0.1    dbhujoo.42.fr" | sudo tee -a /etc/hosts
+```
+
+**3. Create data directories:**
+```bash
+sudo mkdir -p /home/dbhujoo/data/mariadb
+sudo mkdir -p /home/dbhujoo/data/wordpress
+sudo chown -R $USER:$USER /home/dbhujoo/data
+```
+
+**4. Configure secrets:**
+```bash
+# Edit secret files with secure passwords
+nano secrets/db_password.txt
+nano secrets/db_root_password.txt
+nano secrets/wp_admin_password.txt
+nano secrets/wp_user_password.txt
+
+# Set permissions
+chmod 600 secrets/*.txt
+```
+
+**5. Configure environment variables:**
+```bash
+# Create .env file (see .env.example)
+cp .env.example .env
+nano .env
+```
+
+### Building and Running
+
+| Command       | Description                          |
+|---------------|--------------------------------------|
+| `make up`     | Build images and start all services  |
+| `make down`   | Stop and remove all containers       |
+| `make stop`   | Stop containers (preserve state)     |
+| `make start`  | Start stopped containers             |
+| `make re`     | Rebuild and restart all services     |
+| `make clean`  | Remove containers and prune Docker   |
+| `make fclean` | Full clean including data volumes    |
+| `make status` | Show running containers              |
+| `make logs`   | Follow container logs                |
+
+**Quick start:**
+```bash
+make up
+```
+
+**Access the website:**
+- **Site**: https://dbhujoo.42.fr
+- **Admin**: https://dbhujoo.42.fr/wp-admin
+
+### Verification
+
+```bash
+# Check containers are running
+make status
+
+# Test HTTPS connection
+curl -k https://dbhujoo.42.fr
+
+# Check logs for errors
+make logs
+```
+
+---
+
+## Project Description
+
+### What is Docker?
+
+> *"Docker is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly."*  
+> — [Docker Documentation](https://docs.docker.com/get-started/overview/)
+
+Docker is a containerization platform that packages applications and their dependencies into isolated containers. Unlike virtual machines, containers share the host OS kernel, making them lightweight and fast to start.
+
+**Key benefits for this project:**
+- **Portability**: Same environment across development and production
+- **Isolation**: Each service runs in its own container
+- **Reproducibility**: Infrastructure as code via Dockerfiles
+- **Efficiency**: Lightweight compared to full VMs
+
+### Architecture Decisions
+
+This project implements the following architecture:
+
+1. **Debian Bookworm** as base image (penultimate stable version as required)
+2. **Custom Dockerfiles** for each service (no pre-built images)
+3. **Docker Compose** for orchestration
+4. **Bridge network** for secure inter-container communication
+5. **Bind mount volumes** for data persistence
+6. **Docker secrets** for sensitive credentials
+
+### Service Descriptions
+
+#### NGINX (Web Server & Reverse Proxy)
+
+NGINX serves as the single entry point to the infrastructure:
+
+- Handles all incoming HTTPS requests on port 443
+- Terminates TLS connections (TLSv1.2/1.3 only)
+- Proxies PHP requests to WordPress via FastCGI
+- Serves static files directly
+
+**Source**: [NGINX Documentation](https://nginx.org/en/docs/)
+
+#### WordPress (CMS with PHP-FPM)
+
+WordPress runs with PHP-FPM for optimal performance:
+
+- PHP-FPM listens on port 9000
+- Processes dynamic PHP content
+- Connects to MariaDB for data storage
+- WP-CLI for automated setup
+
+**Source**: [WordPress Developer Resources](https://developer.wordpress.org/)
+
+#### MariaDB (Database)
+
+MariaDB stores all WordPress data:
+
+- Relational database management
+- Persistent storage via Docker volumes
+- Initialized via startup script
+- Secured with root and user passwords
+
+**Source**: [MariaDB Documentation](https://mariadb.com/kb/en/documentation/)
+
+---
+
+## Technical Choices & Comparisons
+
+### Virtual Machines vs Docker
+
+| Criteria           | Virtual Machines               | Docker Containers                |
+|--------------------|--------------------------------|----------------------------------|
+| **Virtualization** | Hardware-level (hypervisor)    | OS-level (kernel sharing)        |
+| **OS**             | Full guest OS per VM           | Shares host kernel               |
+| **Size**           | Gigabytes (full OS)            | Megabytes (app + deps only)      |
+| **Startup Time**   | Minutes                        | Seconds/milliseconds             |
+| **Resource Usage** | High (dedicated resources)     | Low (shared resources)           |
+| **Isolation**      | Strong (hardware-level)        | Process-level (sufficient)       |
+| **Portability**    | Limited (hypervisor-dependent) | High (runs anywhere Docker runs) |
+
+**Why Docker for Inception:**
+- Faster development cycles
+- Lower resource footprint
+- Easier orchestration of multiple services
+- Better suited for microservices architecture
+
+> *"Containers share the host system's kernel and isolate the application processes from the rest of the system."*  
+> — [Docker Documentation](https://docs.docker.com/get-started/overview/)
+
+**Source**: [Containers vs VMs](https://www.docker.com/resources/what-container/)
+
+---
+
+### Secrets vs Environment Variables
+
+| Criteria          | Environment Variables          | Docker Secrets                    |
+|-------------------|--------------------------------|-----------------------------------|
+| **Security**      | Visible in logs, inspect, ps   | Encrypted at rest and in transit  |
+| **Storage**       | Plain text in memory           | Encrypted files                   |
+| **Access**        | `$ENV_VAR`                     | `/run/secrets/secret_name`        |
+| **Visibility**    | Exposed in container metadata  | Hidden from inspection            |
+| **Use Case**      | Non-sensitive configuration    | Passwords, API keys, certificates |
+| **Best Practice** | Development only               | Production environments           |
+
+**Implementation in Inception:**
 ```yaml
+# Environment variables for non-sensitive data
+env_file: ../.env
+
+# Secrets for sensitive data
 secrets:
   - db_password
+  - db_root_password
 ```
 
-**Comparison:**
+**Why both:**
+- Environment variables: Database name, WordPress URL, user names
+- Secrets: All passwords and sensitive credentials
 
-| Criteria | Environment Variables | Docker Secrets |
-|----------|----------------------|----------------|
-| Security | Visible in logs/inspect | Encrypted and protected |
-| Use case | Non-sensitive config | Passwords, keys, tokens |
-| Storage | Plain text | Encrypted |
-| Access | Environment vars | Files in /run/secrets/ |
-| Best for | Development | Production |
+> *"In terms of Docker Swarm services, a secret is a blob of data that should not be transmitted over a network or stored unencrypted."*  
+> — [Docker Secrets](https://docs.docker.com/engine/swarm/secrets/)
 
-**Best Practices:**
-- Use environment variables for non-sensitive configuration
-- Use secrets for passwords, API keys, certificates
-- Never commit secrets to version control
-- Use `.env` files (gitignored) for local development
+---
 
-***◦ Docker Network vs Host Network***
+### Docker Network vs Host Network
 
-**Docker Network (Bridge):**
+| Criteria            | Docker Bridge Network       | Host Network              |
+|---------------------|-----------------------------|--------------------------|
+| **Isolation**       | Isolated virtual network    | Shares host network stack |
+| **IP Address**      | Container gets own IP       | Uses host IP              |
+| **DNS**             | Automatic (container names) | No internal DNS           |
+| **Port Conflicts**  | Avoided via port mapping    | Possible with host services|
+| **Security**        | Better (isolated)           | Lower (direct access)     |
+| **Performance**     | Slight overhead             | Native performance        |
+| **Multi-container** | Easy communication          | Complex setup             |
 
-Creates an isolated virtual network for containers to communicate with each other.
-
-How it works:
-- Each container gets its own IP address
-- Containers communicate via container names (DNS resolution)
-- Isolated from host network
-- Port mapping required to expose services
-
+**Implementation in Inception:**
 ```yaml
 networks:
   inception:
     driver: bridge
 ```
 
-**Host Network:**
+**Why Bridge Network:**
+- Containers communicate via service names (`mariadb`, `wordpress`)
+- Isolation from host network
+- Only port 443 exposed to outside world
+- Better security posture
 
-Container shares the host's network stack directly.
+> *"Bridge networks are commonly used when your application runs in a container that needs to communicate with other containers on the same host."*  
+> — [Docker Networking](https://docs.docker.com/network/bridge/)
 
-How it works:
-- No network isolation
-- Container uses host's IP address
-- Direct access to host network interfaces
-- No port mapping needed
+---
 
-```yaml
-network_mode: host
-```
+### Docker Volumes vs Bind Mounts
 
-**Comparison:**
+| Criteria        | Docker Volumes               | Bind Mounts                   |
+|-----------------|------------------------------|-------------------------------|
+| **Management**  | Docker-managed               | User-managed                  |
+| **Location**    | `/var/lib/docker/volumes/`   | Any host path                 |
+| **Creation**    | Automatic or manual          | Directory must exist          |
+| **Portability** | High (Docker handles)        | Low (path-dependent)          |
+| **Backup**      | Docker CLI tools             | Manual file operations        |
+| **Performance** | Optimized for containers     | Native filesystem             |
+| **Permissions** | Docker manages               | Host filesystem permissions   |
+| **Visibility**  | Abstracted                   | Direct host access            |
 
-| Criteria       | Docker Network        | Host Network          |
-|----------      |---------------        |--------------         |
-| Isolation      | Yes (isolated)        | No (shared with host) |
-| Performance    | Slight overhead       | Native performance    |
-| Port conflicts | Avoided (mapping)     | Possible              |
-| Security       | Better (isolation)    | Lower (direct access) |
-| DNS resolution | Yes (container names) | No                    |
-| Best for       | Multi-container apps  | Performance-critical  |
-
-**For Inception:**
-- Use Docker bridge network for container communication
-- NGINX communicates with WordPress via network name
-- Better security through isolation
-
-***◦ Docker Volumes vs Bind Mounts***
-
-**Docker Volumes:**
-
-Managed storage created and managed by Docker, stored in Docker's storage directory.
-
-How they work:
-- Created with `docker volume create` or automatically
-- Stored in `/var/lib/docker/volumes/`
-- Managed entirely by Docker
-- Persistent across container lifecycle
-
+**Implementation in Inception (Bind Mounts with Volume syntax):**
 ```yaml
 volumes:
-  db_data:
-    driver: local
-```
-
-**Bind Mounts:**
-
-Direct mapping of host filesystem directories into containers.
-
-How they work:
-- Maps specific host path to container path
-- Full host filesystem access
-- Host directory must exist
-- Changes reflect immediately on both sides
-
-```yaml
-volumes:
-  - /host/path:/container/path
-```
-
-**Comparison:**
-
-| Criteria | Docker Volumes | Bind Mounts |
-|----------|---------------|-------------|
-| Management | Docker-managed | User-managed |
-| Location | Docker directory | Any host path |
-| Portability | High (Docker-aware) | Low (path-dependent) |
-| Performance | Optimized | Native |
-| Backup | Docker tools | Manual |
-| Permissions | Docker handles | Host permissions |
-| Best for | Production data | Development/config files |
-
-**For Inception:**
-- Use Docker volumes for database data (persistent)
-- Use Docker volumes for WordPress files
-- Ensures data persists even if containers are removed
-- Better portability and management
-
-**Volume Example:**
-```yaml
-services:
   mariadb:
-    volumes:
-      - db_data:/var/lib/mysql
-
-volumes:
-  db_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dbhujoo/data/mariadb
 ```
+
+**Why Bind Mounts:**
+- Required by project specifications
+- Direct access to data for debugging
+- Easy backup via host filesystem
+- Clear data location visibility
+
+> *"Bind mounts have limited functionality compared to volumes. When you use a bind mount, a file or directory on the host machine is mounted into a container."*  
+> — [Docker Storage](https://docs.docker.com/storage/bind-mounts/)
+
+---
+
+## Resources
+
+### Official Documentation
+
+| Technology         | Documentation                                                                      |
+|--------------------|------------------------------------------------------------------------------------|
+| **Docker**         | [docs.docker.com](https://docs.docker.com/)                                        |
+| **Docker Compose** | [Compose Documentation](https://docs.docker.com/compose/)                          |
+| **NGINX**          | [nginx.org/en/docs](https://nginx.org/en/docs/)                                    |
+| **WordPress**      | [developer.wordpress.org](https://developer.wordpress.org/)                        |
+| **MariaDB**        | [mariadb.com/kb](https://mariadb.com/kb/en/documentation/)                         |
+| **PHP-FPM**        | [php.net/manual/en/install.fpm.php](https://www.php.net/manual/en/install.fpm.php) |
+| **WP-CLI**         | [wp-cli.org](https://wp-cli.org/)                                                  |
+
+### Tutorials & Articles
+
+- [Docker Getting Started](https://docs.docker.com/get-started/)
+- [Docker Compose Tutorial](https://docs.docker.com/compose/gettingstarted/)
+- [NGINX Beginner's Guide](https://nginx.org/en/docs/beginners_guide.html)
+- [Dockerizing WordPress](https://www.digitalocean.com/community/tutorials/how-to-install-wordpress-with-docker-compose)
+- [Docker Security Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html)
+
+### Technical Specifications
+
+- [TLS 1.2 - RFC 5246](https://datatracker.ietf.org/doc/html/rfc5246)
+- [TLS 1.3 - RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446)
+- [FastCGI Specification](https://fastcgi-archives.github.io/FastCGI_Specification.html)
+
+### Best Practices
+
+- [Dockerfile Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+- [The Twelve-Factor App](https://12factor.net/)
+- [WordPress Security Best Practices](https://wordpress.org/support/article/hardening-wordpress/)
+
+---
+
+## AI Usage Declaration
+
+### How AI Was Used in This Project
+
+AI tools were used during the development of this project for the following purposes:
+
+#### 1. Documentation Research
+- Understanding Docker concepts and architecture
+- Learning about TLS protocols and security best practices
+- Researching NGINX, PHP-FPM, and MariaDB configurations
+
+#### 2. Debugging Assistance
+- Resolving network connectivity problems
+
+#### 3. Code Review & Optimization
+- Optimizing shell scripts for idempotency
+
+#### 4. Documentation Writing
+- Structuring README.md and documentation files
+- Creating comparison tables
+- Writing clear explanations of technical concepts
+
+### Parts NOT Generated by AI
+
+The following were done entirely manually:
+- ✅ Understanding project requirements
+- ✅ Architecture design decisions
+- ✅ Testing and validation
+- ✅ Final code integration
+- ✅ Security considerations specific to 42 requirements
+
+### AI Usage Philosophy
+
+AI was used as a **learning accelerator** and **documentation assistant**, not as a code generator. All code was reviewed, understood, and adapted to meet specific project requirements.
+
+> *"AI tools can help developers work more efficiently, but understanding the underlying concepts remains essential for writing secure and maintainable code."*
+
+---
+
+## License
+
+This project is part of the 42 curriculum. All rights reserved.
+
+---
+
+*Document created on January 29, 2026 by dbhujoo*  
+*Inception Project - 42 School*
