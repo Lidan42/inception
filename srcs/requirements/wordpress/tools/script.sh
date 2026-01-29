@@ -27,7 +27,7 @@ fi
 # Installation WordPress (idempotente)
 if ! wp core is-installed --allow-root --path='/var/www/wordpress' 2>/dev/null; then
 	wp core install --allow-root \
-		--url=${WP_URL} \
+		--url=https://${WP_URL} \
 		--title="${WP_TITLE}" \
 		--admin_user=${WP_ADMIN_USER} \
 		--admin_password=${WP_ADMIN_PASSWORD} \
