@@ -90,6 +90,7 @@ This project demonstrates proficiency in:
 | **NGINX**     | debian:bookworm | 443  | Reverse proxy, TLS termination |
 | **WordPress** | debian:bookworm | 9000 | PHP-FPM, CMS application       |
 | **MariaDB**   | debian:bookworm | 3306 | Relational database            |
+| **Redis**     | debian:bookworm | 6379 | In-memory cache for WordPress  |
 
 ### Security Features
 

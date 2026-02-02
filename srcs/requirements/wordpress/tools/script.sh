@@ -44,4 +44,14 @@ if ! wp user get ${WP_USER} --allow-root --path='/var/www/wordpress' 2>/dev/null
 		--path='/var/www/wordpress'
 fi
 
+# Configuration Redis
+wp config set WP_REDIS_HOST 'redis' --allow-root --path='/var/www/wordpress'
+wp config set WP_REDIS_PORT 6379 --allow-root --path='/var/www/wordpress' --raw
+
+# Installation et activation du plugin Redis Object Cache
+if ! wp plugin is-installed redis-cache --allow-root --path='/var/www/wordpress' 2>/dev/null; then
+	wp plugin install redis-cache --activate --allow-root --path='/var/www/wordpress'
+fi
+wp redis enable --allow-root --path='/var/www/wordpress' 2>/dev/null || true
+
 exec /usr/sbin/php-fpm8.2 -F   

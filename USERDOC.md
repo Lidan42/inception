@@ -60,7 +60,37 @@ This Docker infrastructure provides a **complete and secure web stack** composed
 > *"MariaDB Server is one of the most popular open source relational databases. It's made by the original developers of MySQL and guaranteed to stay open source."*  
 > — [MariaDB.org](https://mariadb.org/about/)
 
-### 1.4 Network Architecture
+### 1.4 Redis (Cache)
+
+- **Role**: In-memory data store used as a cache for WordPress to improve performance
+- **Version**: Latest stable version of Redis
+- **Port**: 6379 (internal only, not exposed to host)
+- **Memory Limit**: 256 MB
+- **Eviction Policy**: `allkeys-lru` (removes least recently used keys when memory is full)
+- **Configuration**: `/srcs/requirements/bonus/redis/conf/redis.conf`
+
+**Source**: [Official Redis Documentation](https://redis.io/documentation)
+
+> *"Redis is an open source, in-memory data structure store, used as a database, cache, message broker, and streaming engine."*  
+> — [Redis.io](https://redis.io/)
+
+#### How Redis improves WordPress performance:
+
+| Without Redis | With Redis |
+|---------------|------------|
+| Every page load queries the database | Frequently accessed data is cached in RAM |
+| Slower response times | ~1000x faster data retrieval |
+| Higher database load | Reduced database queries |
+
+#### WordPress Integration:
+
+Redis is integrated via the **Redis Object Cache** plugin, which automatically caches:
+- Database query results
+- User sessions
+- Transient data
+- Object cache
+
+### 1.5 Network Architecture
 
 The three containers communicate via a **Docker bridge network** named `inception`, isolating the infrastructure from the host network while allowing inter-container communication.
 

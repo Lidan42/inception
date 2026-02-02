@@ -7,6 +7,7 @@ RUN apt-get update -y \
         php8.2 \
         php8.2-fpm \
         php8.2-mysql \
+        php8.2-redis \
         mariadb-client \
     && rm -rf /var/lib/apt/lists/* \
     && wget https://wordpress.org/wordpress-6.7.1.tar.gz -P /var/www \

@@ -47,6 +47,14 @@ services:
       - db_password
       - wp_admin_password
       - wp_user_password
+  redis:
+    build:
+      context: requirements/bonus/redis
+      dockerfile: Dockerfile
+    container_name: redis
+    networks:
+      - inception
+    restart: on-failure
 
 networks:
   inception:
