@@ -89,6 +89,17 @@ services:
     ports:
       - "8080:8080"
 
+  adminer:
+    build:
+      context: requirements/bonus/adminer
+      dockerfile: Dockerfile
+    container_name: adminer
+    networks:
+      - inception
+    restart: on-failure
+    depends_on:
+      - mariadb
+
 networks:
   inception:
     driver: bridge
