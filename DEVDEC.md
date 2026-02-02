@@ -159,42 +159,55 @@ inception/
         │   ├── conf/
         │   │   └── nginx.conf        # NGINX configuration
         │   └── tools/
-        └── wordpress/
-            ├── Dockerfile            # WordPress image definition
-            ├── conf/
-            │   └── www.conf          # PHP-FPM pool configuration
-            └── tools/
-                └── script.sh         # WordPress setup script
+        ├── wordpress/
+        │   ├── Dockerfile            # WordPress image definition
+        │   ├── conf/
+        │   │   └── www.conf          # PHP-FPM pool configuration
+        │   └── tools/
+        │       └── script.sh         # WordPress setup script
+        └── bonus/
+            └── redis/
+                ├── Dockerfile        # Redis image definition
+                └── conf/
+                    └── redis.conf    # Redis configuration
 ```
 
 ### 2.2 Service Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        HOST MACHINE                          │
-│                                                              │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │                  Docker Network: inception              │ │
-│  │                                                         │ │
-│  │   ┌─────────┐      ┌─────────────┐      ┌──────────┐  │ │
-│  │   │  NGINX  │──────│  WordPress  │──────│ MariaDB  │  │ │
-│  │   │ :443    │ PHP  │  :9000      │ SQL  │  :3306   │  │ │
-│  │   │         │ FPM  │  (PHP-FPM)  │      │          │  │ │
-│  │   └────┬────┘      └──────┬──────┘      └────┬─────┘  │ │
-│  │        │                  │                   │        │ │
-│  └────────┼──────────────────┼───────────────────┼────────┘ │
-│           │                  │                   │          │
-│  ┌────────▼──────────────────▼───────────────────▼────────┐ │
-│  │                    Docker Volumes                       │ │
-│  │   /home/dbhujoo/data/wordpress  /home/dbhujoo/data/mariadb │
-│  └─────────────────────────────────────────────────────────┘ │
-│                            │                                  │
-└────────────────────────────┼──────────────────────────────────┘
-                             │
-                     Port 443 (HTTPS)
-                             │
-                             ▼
-                        Browser/Client
+┌───────────────────────────────────────────────────────────────────┐
+│                          HOST MACHINE                              │
+│                                                                    │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │                    Docker Network: inception                  │ │
+│  │                                                               │ │
+│  │   ┌─────────┐      ┌─────────────┐      ┌──────────┐        │ │
+│  │   │  NGINX  │──────│  WordPress  │──────│ MariaDB  │        │ │
+│  │   │ :443    │ PHP  │  :9000      │ SQL  │  :3306   │        │ │
+│  │   │         │ FPM  │  (PHP-FPM)  │      │          │        │ │
+│  │   └────┬────┘      └──────┬──────┘      └────┬─────┘        │ │
+│  │        │                  │                   │              │ │
+│  │        │                  │ cache             │              │ │
+│  │        │                  ▼                   │              │ │
+│  │        │            ┌──────────┐              │              │ │
+│  │        │            │  Redis   │              │              │ │
+│  │        │            │  :6379   │              │              │ │
+│  │        │            │ (cache)  │              │              │ │
+│  │        │            └──────────┘              │              │ │
+│  │        │                                      │              │ │
+│  └────────┼──────────────────────────────────────┼──────────────┘ │
+│           │                                      │                │
+│  ┌────────▼──────────────────────────────────────▼──────────────┐ │
+│  │                      Docker Volumes                           │ │
+│  │   /home/dbhujoo/data/wordpress  /home/dbhujoo/data/mariadb    │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+│                              │                                     │
+└──────────────────────────────┼─────────────────────────────────────┘
+                               │
+                       Port 443 (HTTPS)
+                               │
+                               ▼
+                          Browser/Client
 ```
 
 ### 2.3 Container Dependencies
@@ -202,8 +215,9 @@ inception/
 ```yaml
 # Startup order (managed by depends_on)
 1. mariadb    → Starts first (no dependencies)
-2. wordpress  → Waits for mariadb
-3. nginx      → Waits for wordpress
+2. redis      → Starts independently (no dependencies)
+3. wordpress  → Waits for mariadb (uses redis for caching)
+4. nginx      → Waits for wordpress
 ```
 
 **Source**: [Docker Compose depends_on](https://docs.docker.com/compose/compose-file/compose-file-v3/#depends_on)
@@ -781,7 +795,34 @@ docker exec nginx tail -f /var/log/nginx/access.log
 docker exec nginx tail -f /var/log/nginx/error.log
 ```
 
-### 7.5 Network Debugging
+### 7.5 Redis Debugging
+
+```bash
+# Check Redis status from WordPress
+docker exec -it wordpress wp redis status --allow-root --path='/var/www/wordpress'
+
+# Connect to Redis CLI
+docker exec -it redis redis-cli
+
+# Useful Redis commands
+PING                    # Should return PONG
+INFO                    # Server information
+INFO memory             # Memory usage
+DBSIZE                  # Number of keys in database
+KEYS *                  # List all keys (use with caution)
+FLUSHALL                # Clear all data (use with caution)
+
+# Monitor Redis in real-time
+docker exec -it redis redis-cli MONITOR
+
+# Check Redis logs
+docker logs redis 2>&1 | tail -50
+
+# Test connectivity from WordPress
+docker exec wordpress redis-cli -h redis ping
+```
+
+### 7.6 Network Debugging
 
 ```bash
 # Test HTTPS connection
@@ -795,7 +836,7 @@ docker exec wordpress netstat -tlnp
 docker exec wordpress getent hosts mariadb
 ```
 
-### 7.6 Common Issues and Solutions
+### 7.7 Common Issues and Solutions
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -805,6 +846,8 @@ docker exec wordpress getent hosts mariadb
 | SSL certificate error | Self-signed certificate | Accept in browser (expected) |
 | Permission denied | Volume ownership | `chown -R www-data:www-data` |
 | Port already in use | Another service on 443 | `sudo lsof -i :443` |
+| Redis not connected | Redis container not running | `docker restart redis` |
+| Redis cache not working | Plugin not enabled | `wp redis enable --allow-root` |
 
 ---
 
@@ -820,6 +863,8 @@ docker exec wordpress getent hosts mariadb
 - [WordPress Developer Resources](https://developer.wordpress.org/)
 - [WP-CLI Documentation](https://wp-cli.org/)
 - [PHP-FPM Documentation](https://www.php.net/manual/en/install.fpm.php)
+- [Redis Documentation](https://redis.io/documentation)
+- [Redis Object Cache Plugin](https://wordpress.org/plugins/redis-cache/)
 
 ### 8.2 Best Practices
 
