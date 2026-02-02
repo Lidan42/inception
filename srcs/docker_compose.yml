@@ -78,6 +78,17 @@ services:
     secrets:
       - ftp_password
 
+  static-site:
+    build:
+      context: requirements/bonus/static-site
+      dockerfile: Dockerfile
+    container_name: static-site
+    networks:
+      - inception
+    restart: on-failure
+    ports:
+      - "8080:8080"
+
 networks:
   inception:
     driver: bridge
