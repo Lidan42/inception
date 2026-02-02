@@ -91,6 +91,7 @@ This project demonstrates proficiency in:
 | **WordPress** | debian:bookworm | 9000 | PHP-FPM, CMS application       |
 | **MariaDB**   | debian:bookworm | 3306 | Relational database            |
 | **Redis**     | debian:bookworm | 6379 | In-memory cache for WordPress  |
+| **FTP**       | debian:bookworm | 21   | File transfer to WordPress     |
 
 ### Security Features
 

@@ -90,7 +90,37 @@ Redis is integrated via the **Redis Object Cache** plugin, which automatically c
 - Transient data
 - Object cache
 
-### 1.5 Network Architecture
+### 1.5 FTP Server (File Transfer)
+
+- **Role**: Allows file transfer to/from the WordPress directory via FTP protocol
+- **Software**: vsftpd (Very Secure FTP Daemon)
+- **Port**: 21 (control) + 21100-21110 (passive data transfer)
+- **Root Directory**: `/var/www/wordpress` (same as WordPress volume)
+- **Configuration**: `/srcs/requirements/bonus/ftp/conf/vsftpd.conf`
+
+**Source**: [vsftpd Documentation](https://security.appspot.com/vsftpd.html)
+
+> *"vsftpd is a GPL licensed FTP server for UNIX systems, including Linux. It is secure and extremely fast."*  
+> — [vsftpd](https://security.appspot.com/vsftpd.html)
+
+#### FTP Connection Details:
+
+| Parameter | Value |
+|-----------|-------|
+| Host | `dbhujoo.42.fr` or `127.0.0.1` |
+| Port | `21` |
+| User | `ftpuser` (configured in .env) |
+| Password | See `secrets/ftp_password.txt` |
+| Protocol | FTP (passive mode) |
+
+#### Use Cases:
+
+- Upload custom themes or plugins
+- Download backup files
+- Edit WordPress files directly
+- Manage media uploads
+
+### 1.6 Network Architecture
 
 The three containers communicate via a **Docker bridge network** named `inception`, isolating the infrastructure from the host network while allowing inter-container communication.
 

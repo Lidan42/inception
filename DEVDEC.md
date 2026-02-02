@@ -166,10 +166,16 @@ inception/
         │   └── tools/
         │       └── script.sh         # WordPress setup script
         └── bonus/
-            └── redis/
-                ├── Dockerfile        # Redis image definition
-                └── conf/
-                    └── redis.conf    # Redis configuration
+            ├── redis/
+            │   ├── Dockerfile        # Redis image definition
+            │   └── conf/
+            │       └── redis.conf    # Redis configuration
+            └── ftp/
+                ├── Dockerfile        # FTP server image definition
+                ├── conf/
+                │   └── vsftpd.conf   # vsftpd configuration
+                └── tools/
+                    └── script.sh     # FTP user setup script
 ```
 
 ### 2.2 Service Architecture
@@ -822,7 +828,32 @@ docker logs redis 2>&1 | tail -50
 docker exec wordpress redis-cli -h redis ping
 ```
 
-### 7.6 Network Debugging
+### 7.6 FTP Debugging
+
+```bash
+# Check FTP container status
+docker logs ftp 2>&1 | tail -50
+
+# Access FTP container
+docker exec -it ftp bash
+
+# Check vsftpd process
+docker exec ftp ps aux | grep vsftpd
+
+# Test FTP connection locally
+docker exec ftp ftp localhost
+
+# Check FTP user exists
+docker exec ftp id ftpuser
+
+# Verify WordPress volume is mounted
+docker exec ftp ls -la /var/www/wordpress
+
+# Test connection with curl
+curl -v ftp://ftpuser:password@127.0.0.1/
+```
+
+### 7.7 Network Debugging
 
 ```bash
 # Test HTTPS connection
@@ -836,7 +867,7 @@ docker exec wordpress netstat -tlnp
 docker exec wordpress getent hosts mariadb
 ```
 
-### 7.7 Common Issues and Solutions
+### 7.8 Common Issues and Solutions
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
@@ -848,6 +879,9 @@ docker exec wordpress getent hosts mariadb
 | Port already in use | Another service on 443 | `sudo lsof -i :443` |
 | Redis not connected | Redis container not running | `docker restart redis` |
 | Redis cache not working | Plugin not enabled | `wp redis enable --allow-root` |
+| FTP connection refused | vsftpd not running | `docker restart ftp` |
+| FTP login failed | Wrong credentials | Check `.env` and `ftp_password.txt` |
+| FTP passive mode error | Ports not exposed | Verify ports 21100-21110 are open |
 
 ---
 

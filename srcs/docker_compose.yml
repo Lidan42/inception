@@ -5,6 +5,7 @@ services:
     build:
       context: requirements/mariadb
       dockerfile: Dockerfile
+    image: mariadb
     container_name: mariadb
     networks:
       - inception
@@ -19,6 +20,7 @@ services:
     build:
       context: requirements/nginx
       dockerfile: Dockerfile
+    image: nginx
     container_name: nginx
     networks:
       - inception
@@ -34,6 +36,7 @@ services:
     build:
       context: requirements/wordpress
       dockerfile: Dockerfile
+    image: wordpress
     container_name: wordpress
     networks:
       - inception
@@ -51,10 +54,29 @@ services:
     build:
       context: requirements/bonus/redis
       dockerfile: Dockerfile
+    image: redis
     container_name: redis
     networks:
       - inception
     restart: on-failure
+
+  ftp:
+    build:
+      context: requirements/bonus/ftp
+      dockerfile: Dockerfile
+    image: ftp
+    container_name: ftp
+    networks:
+      - inception
+    restart: on-failure
+    env_file: .env
+    volumes:
+      - wordpress:/var/www/wordpress
+    ports:
+      - "21:21"
+      - "21100-21110:21100-21110"
+    secrets:
+      - ftp_password
 
 networks:
   inception:
@@ -83,3 +105,5 @@ secrets:
     file: ../secrets/wp_admin_password.txt
   wp_user_password:
     file: ../secrets/wp_user_password.txt
+  ftp_password:
+    file: ../secrets/ftp_password.txt
