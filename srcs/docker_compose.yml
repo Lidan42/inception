@@ -9,7 +9,7 @@ services:
     networks:
       - inception
     restart: on-failure
-    env_file: ../.env
+    env_file: .env
     secrets:
       - db_password
       - db_root_password
@@ -23,7 +23,7 @@ services:
     networks:
       - inception
     restart: on-failure
-    env_file: ../.env
+    env_file: .env
     volumes:
       - wordpress:/var/www/wordpress
     depends_on:
@@ -38,7 +38,7 @@ services:
     networks:
       - inception
     restart: on-failure
-    env_file: ../.env
+    env_file: .env
     volumes:
       - wordpress:/var/www/wordpress
     depends_on:
