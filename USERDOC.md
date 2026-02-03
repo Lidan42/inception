@@ -19,7 +19,18 @@
 
 ## 1. Services Overview
 
-This Docker infrastructure provides a **complete and secure web stack** composed of three main services:
+This Docker infrastructure provides a **complete and secure web stack** composed of the following services:
+
+| Service         | Port            | Role                                |
+|-----------------|-----------------|-------------------------------------|
+| **NGINX**       | 443             | Web server, reverse proxy, TLS      |
+| **WordPress**   | 9000            | CMS with PHP-FPM                    |
+| **MariaDB**     | 3306            | Relational database                 |
+| **Redis**       | 6379            | In-memory cache                     |
+| **FTP**         | 21, 21100-21110 | File transfer to WordPress          |
+| **Adminer**     | 8080 (internal) | Database management interface       |
+| **cAdvisor**    | 8081            | Container monitoring                |
+| **Static Site** | 8080            | Portfolio website                   |
 
 ### 1.1 NGINX (Web Server & Reverse Proxy)
 
@@ -120,7 +131,62 @@ Redis is integrated via the **Redis Object Cache** plugin, which automatically c
 - Edit WordPress files directly
 - Manage media uploads
 
-### 1.6 Network Architecture
+### 1.6 Adminer (Database Management)
+
+- **Role**: Web-based database management interface for MariaDB
+- **Version**: Adminer 4.8.1
+- **Port**: 8080 (internal, accessed via NGINX reverse proxy)
+- **Access**: `https://dbhujoo.42.fr/adminer`
+
+**Source**: [Adminer Documentation](https://www.adminer.org/)
+
+> *"Adminer is a full-featured database management tool written in PHP. It consists of a single file ready to deploy to the target server."*  
+> — [Adminer.org](https://www.adminer.org/)
+
+#### Connection Details:
+
+| Parameter | Value |
+|-----------|-------|
+| Server    | `mariadb` |
+| Username  | Value from `SQL_USER` in `.env` |
+| Password  | See `secrets/db_password.txt` |
+| Database  | `wordpress` |
+
+### 1.7 cAdvisor (Container Monitoring)
+
+- **Role**: Real-time monitoring of container resource usage
+- **Version**: cAdvisor 0.47.0
+- **Port**: 8081
+- **Access**: `http://localhost:8081`
+
+**Source**: [cAdvisor GitHub](https://github.com/google/cadvisor)
+
+> *"cAdvisor (Container Advisor) provides container users an understanding of the resource usage and performance characteristics of their running containers."*  
+> — [Google cAdvisor](https://github.com/google/cadvisor)
+
+#### Available Metrics:
+
+| Metric | Description |
+|--------|-------------|
+| CPU    | Usage percentage per container |
+| Memory | RAM usage and limits |
+| Network| Bytes sent/received |
+| Disk   | I/O operations and space |
+
+### 1.8 Static Site (Portfolio)
+
+- **Role**: Static HTML/CSS/JS website showcasing 42 projects
+- **Port**: 8080
+- **Access**: `http://localhost:8080`
+- **Location**: `/var/www/static` (inside the container)
+
+#### Features:
+
+- Displays all 42 curriculum projects
+- Responsive design
+- Dark theme with modern styling
+
+### 1.9 Network Architecture
 
 The three containers communicate via a **Docker bridge network** named `inception`, isolating the infrastructure from the host network while allowing inter-container communication.
 
@@ -302,6 +368,48 @@ mysql -h mariadb -u $SQL_USER -p
 
 **Source**: [MariaDB Command-line Client](https://mariadb.com/kb/en/mysql-command-line-client/)
 
+### 4.4 Accessing Adminer
+
+**URL**: `https://dbhujoo.42.fr/adminer`
+
+**Connection details**:
+- **Server**: `mariadb`
+- **Username**: Value from `SQL_USER` in `.env`
+- **Password**: See `secrets/db_password.txt`
+- **Database**: `wordpress`
+
+### 4.5 Accessing cAdvisor
+
+**URL**: `http://localhost:8081`
+
+No authentication required. Provides real-time container metrics.
+
+### 4.6 Accessing Static Site
+
+**URL**: `http://localhost:8080`
+
+No authentication required. Displays the 42 projects portfolio.
+
+### 4.7 Accessing FTP
+
+**Connection details**:
+- **Host**: `127.0.0.1` or `dbhujoo.42.fr`
+- **Port**: `21`
+- **Username**: `ftpuser`
+- **Password**: See `secrets/ftp_password.txt`
+- **Protocol**: FTP (passive mode)
+
+**Using command line**:
+```bash
+ftp 127.0.0.1
+```
+
+**Using FileZilla or similar FTP client**:
+1. Host: `127.0.0.1`
+2. Port: `21`
+3. Protocol: FTP
+4. Encryption: Plain FTP
+
 ---
 
 ## 5. Credentials Management
@@ -316,6 +424,7 @@ All passwords are stored in the directory:
 **Secret files**:
 - `db_password.txt`: WordPress user password for the database
 - `db_root_password.txt`: MariaDB root password
+- `ftp_password.txt`: FTP user password
 - `wp_admin_password.txt`: WordPress administrator password
 - `wp_user_password.txt`: Standard WordPress user password
 
@@ -392,10 +501,15 @@ docker ps
 
 **Expected output**:
 ```
-CONTAINER ID   IMAGE              STATUS         PORTS                  NAMES
-abc123...      nginx              Up 5 minutes   0.0.0.0:443->443/tcp   nginx
-def456...      wordpress          Up 5 minutes                          wordpress
-ghi789...      mariadb            Up 5 minutes                          mariadb
+CONTAINER ID   IMAGE              STATUS         PORTS                           NAMES
+abc123...      nginx              Up 5 minutes   0.0.0.0:443->443/tcp            nginx
+def456...      wordpress          Up 5 minutes                                   wordpress
+ghi789...      mariadb            Up 5 minutes                                   mariadb
+jkl012...      redis              Up 5 minutes                                   redis
+mno345...      ftp                Up 5 minutes   0.0.0.0:21->21/tcp              ftp
+pqr678...      static-site        Up 5 minutes   0.0.0.0:8080->8080/tcp          static-site
+stu901...      adminer            Up 5 minutes                                   adminer
+vwx234...      cadvisor           Up 5 minutes   0.0.0.0:8081->8080/tcp          cadvisor
 ```
 
 **Source**: [Docker ps command](https://docs.docker.com/engine/reference/commandline/ps/)
@@ -621,15 +735,23 @@ docker logs <name>    # Logs of a specific service
 make clean            # Clean Docker resources
 make fclean           # Complete cleanup + data
 
-# Access
+# Access URLs
 https://dbhujoo.42.fr              # WordPress site
 https://dbhujoo.42.fr/wp-admin     # WordPress admin
-docker exec -it mariadb bash       # MariaDB access
-docker exec -it wordpress bash     # WordPress access
+https://dbhujoo.42.fr/adminer      # Adminer (database)
+http://localhost:8080              # Static site (portfolio)
+http://localhost:8081              # cAdvisor (monitoring)
+
+# Container shell access
 docker exec -it nginx bash         # NGINX access
+docker exec -it wordpress bash     # WordPress access
+docker exec -it mariadb bash       # MariaDB access
+docker exec -it redis redis-cli    # Redis CLI
+docker exec -it ftp bash           # FTP access
 ```
 
 ---
 
 *Document created on January 29, 2026 by dbhujoo*  
+*Last updated on February 3, 2026*  
 *Inception Project - 42 School*

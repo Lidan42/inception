@@ -55,43 +55,57 @@ This project demonstrates proficiency in:
 ### Infrastructure Components
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         HOST MACHINE                             │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │                Docker Network: inception                    │ │
-│  │                                                             │ │
-│  │   ┌──────────┐     ┌─────────────┐     ┌──────────────┐   │ │
-│  │   │  NGINX   │────▶│  WordPress  │────▶│   MariaDB    │   │ │
-│  │   │  :443    │ PHP │  :9000      │ SQL │   :3306      │   │ │
-│  │   │  TLS 1.3 │ FPM │  PHP-FPM    │     │              │   │ │
-│  │   └────┬─────┘     └──────┬──────┘     └──────┬───────┘   │ │
-│  │        │                  │                   │            │ │
-│  └────────┼──────────────────┼───────────────────┼────────────┘ │
-│           │                  │                   │              │
-│           ▼                  ▼                   ▼              │
-│   ┌───────────────────────────────────────────────────────────┐ │
-│   │                    Persistent Volumes                      │ │
-│   │   /home/dbhujoo/data/wordpress    /home/dbhujoo/data/mariadb │
-│   └───────────────────────────────────────────────────────────┘ │
-│                              │                                   │
-└──────────────────────────────┼───────────────────────────────────┘
-                               │
-                        Port 443 (HTTPS)
-                               │
-                               ▼
-                         Client Browser
+┌────────────────────────────────────────────────────────────────────────────┐
+│                             HOST MACHINE                                   │
+│                                                                            │
+│  ┌───────────────────────────────────────────────────────────────────────┐ │
+│  │                    Docker Network: inception                          │ │
+│  │                                                                       │ │
+│  │  ┌─────────┐   ┌─────────────┐   ┌──────────┐   ┌───────────┐         │ │
+│  │  │  NGINX  │─▶│  WordPress  │─▶│ MariaDB  │◀─│  Adminer  │         │ │
+│  │  │  :443   │PHP│   :9000     │SQL│  :3306   │   │   :8080   │         │ │
+│  │  │ TLS 1.3 │FPM│  (PHP-FPM)  │   │          │   │           │         │ │
+│  │  └────┬────┘   └──────┬──────┘   └──────────┘   └───────────┘         │ │
+│  │       │               │                                               │ │
+│  │       │               │ cache      ┌───────────┐   ┌─────────────┐    │ │
+│  │       │               └──────────▶│   Redis   │   │  cAdvisor   │    │ │
+│  │       │                            │   :6379   │   │   :8081     │    │ │
+│  │       │                            └───────────┘   └─────────────┘    │ │
+│  │       │                                                               │ │
+│  │       │        ┌──────────┐        ┌─────────────────┐                │ │
+│  │       │        │   FTP    │        │   Static Site   │                │ │
+│  │       │        │   :21    │        │     :8080       │                │ │
+│  │       │        │ (vsftpd) │        │   (portfolio)   │                │ │
+│  │       │        └────┬─────┘        └─────────────────┘                │ │
+│  │       │             │                                                 │ │
+│  └───────┼─────────────┼─────────────────────────────────────────────────┘ │
+│          │             │                                                   │
+│  ┌───────▼─────────────▼──────────────────────────────────────────────────┐│
+│  │                        Persistent Volumes                              ││
+│  │    /home/dbhujoo/data/wordpress    /home/dbhujoo/data/mariadb          ││
+│  └────────────────────────────────────────────────────────────────────────┘│
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+                   │                   │                   │
+            Port 443 (HTTPS)    Port 8080 (HTTP)    Port 8081 (HTTP)
+                   │                   │                   │
+                   ▼                   ▼                   ▼
+               WordPress         Static Site           cAdvisor
+               + Adminer          Portfolio           Monitoring
 ```
 
 ### Service Details
 
-| Service       | Base Image      | Port | Role                           |
-|---------------|-----------------|------|--------------------------------|
-| **NGINX**     | debian:bookworm | 443  | Reverse proxy, TLS termination |
-| **WordPress** | debian:bookworm | 9000 | PHP-FPM, CMS application       |
-| **MariaDB**   | debian:bookworm | 3306 | Relational database            |
-| **Redis**     | debian:bookworm | 6379 | In-memory cache for WordPress  |
-| **FTP**       | debian:bookworm | 21   | File transfer to WordPress     |
+| Service         | Base Image      | Port            | Role                           |
+|-----------------|-----------------|-----------------|--------------------------------|
+| **NGINX**       | debian:bookworm | 443             | Reverse proxy, TLS termination |
+| **WordPress**   | debian:bookworm | 9000            | PHP-FPM, CMS application       |
+| **MariaDB**     | debian:bookworm | 3306            | Relational database            |
+| **Redis**       | debian:bookworm | 6379            | In-memory cache for WordPress  |
+| **FTP**         | debian:bookworm | 21, 21100-21110 | File transfer to WordPress     |
+| **Adminer**     | debian:bookworm | 8080 (internal) | Database management interface  |
+| **cAdvisor**    | debian:bookworm | 8081            | Container monitoring           |
+| **Static Site** | debian:bookworm | 8080            | Portfolio website              |
 
 ### Security Features
 
@@ -147,6 +161,7 @@ sudo chown -R $USER:$USER /home/dbhujoo/data
 # Edit secret files with secure passwords
 nano secrets/db_password.txt
 nano secrets/db_root_password.txt
+nano secrets/ftp_password.txt
 nano secrets/wp_admin_password.txt
 nano secrets/wp_user_password.txt
 
@@ -180,9 +195,12 @@ nano .env
 make up
 ```
 
-**Access the website:**
-- **Site**: https://dbhujoo.42.fr
-- **Admin**: https://dbhujoo.42.fr/wp-admin
+**Access the services:**
+- **WordPress**: https://dbhujoo.42.fr
+- **Admin Panel**: https://dbhujoo.42.fr/wp-admin
+- **Adminer**: https://dbhujoo.42.fr/adminer
+- **Static Site**: http://localhost:8080
+- **cAdvisor**: http://localhost:8081
 
 ### Verification
 
@@ -467,4 +485,5 @@ This project is part of the 42 curriculum. All rights reserved.
 ---
 
 *Document created on January 29, 2026 by dbhujoo*  
+*Last updated on February 3, 2026*  
 *Inception Project - 42 School*
