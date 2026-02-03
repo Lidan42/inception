@@ -23,12 +23,12 @@
 
 Before setting up the development environment, ensure the following are installed:
 
-| Software | Minimum Version | Verification Command |
-|----------|----------------|---------------------|
-| Docker Engine | 20.10+ | `docker --version` |
-| Docker Compose | 2.0+ | `docker compose version` |
-| Make | 4.0+ | `make --version` |
-| Git | 2.0+ | `git --version` |
+| Software       | Minimum Version | Verification Command      |
+|----------------|-----------------|---------------------------|
+| Docker Engine  | 20.10+          | `docker --version`        |
+| Docker Compose | 2.0+            | `docker compose version`  |
+| Make           | 4.0+            | `make --version`          |
+| Git            | 2.0+            | `git --version`           |
 
 **Installation on Debian/Ubuntu:**
 ```bash
@@ -87,6 +87,7 @@ cd secrets/
 # Create secret files (replace with secure passwords)
 echo "your_db_password" > db_password.txt
 echo "your_db_root_password" > db_root_password.txt
+echo "your_ftp_password" > ftp_password.txt
 echo "your_wp_admin_password" > wp_admin_password.txt
 echo "your_wp_user_password" > wp_user_password.txt
 
@@ -99,6 +100,7 @@ chmod 600 *.txt
 secrets/
 ├── db_password.txt         # MariaDB user password
 ├── db_root_password.txt    # MariaDB root password
+├── ftp_password.txt        # FTP user password
 ├── wp_admin_password.txt   # WordPress admin password
 └── wp_user_password.txt    # WordPress user password
 ```
@@ -143,6 +145,7 @@ inception/
 ├── secrets/                          # Docker secrets
 │   ├── db_password.txt
 │   ├── db_root_password.txt
+│   ├── ftp_password.txt              # FTP user password
 │   ├── wp_admin_password.txt
 │   └── wp_user_password.txt
 └── srcs/
@@ -166,65 +169,103 @@ inception/
         │   └── tools/
         │       └── script.sh         # WordPress setup script
         └── bonus/
+            ├── adminer/
+            │   └── Dockerfile        # Adminer image definition
+            ├── cadvisor/
+            │   └── Dockerfile        # cAdvisor image definition
+            ├── ftp/
+            │   ├── Dockerfile        # FTP server image definition
+            │   ├── conf/
+            │   │   └── vsftpd.conf   # vsftpd configuration
+            │   └── tools/
+            │       └── script.sh     # FTP user setup script
             ├── redis/
             │   ├── Dockerfile        # Redis image definition
             │   └── conf/
             │       └── redis.conf    # Redis configuration
-            └── ftp/
-                ├── Dockerfile        # FTP server image definition
+            └── static-site/
+                ├── Dockerfile        # Static site image definition
                 ├── conf/
-                │   └── vsftpd.conf   # vsftpd configuration
-                └── tools/
-                    └── script.sh     # FTP user setup script
+                │   └── nginx.conf    # Static site NGINX config
+                └── site/
+                    ├── index.html    # Portfolio page
+                    ├── style.css     # Styles
+                    └── script.js     # JavaScript
 ```
 
 ### 2.2 Service Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│                          HOST MACHINE                              │
-│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │                    Docker Network: inception                  │ │
-│  │                                                               │ │
-│  │   ┌─────────┐      ┌─────────────┐      ┌──────────┐        │ │
-│  │   │  NGINX  │──────│  WordPress  │──────│ MariaDB  │        │ │
-│  │   │ :443    │ PHP  │  :9000      │ SQL  │  :3306   │        │ │
-│  │   │         │ FPM  │  (PHP-FPM)  │      │          │        │ │
-│  │   └────┬────┘      └──────┬──────┘      └────┬─────┘        │ │
-│  │        │                  │                   │              │ │
-│  │        │                  │ cache             │              │ │
-│  │        │                  ▼                   │              │ │
-│  │        │            ┌──────────┐              │              │ │
-│  │        │            │  Redis   │              │              │ │
-│  │        │            │  :6379   │              │              │ │
-│  │        │            │ (cache)  │              │              │ │
-│  │        │            └──────────┘              │              │ │
-│  │        │                                      │              │ │
-│  └────────┼──────────────────────────────────────┼──────────────┘ │
-│           │                                      │                │
-│  ┌────────▼──────────────────────────────────────▼──────────────┐ │
-│  │                      Docker Volumes                           │ │
-│  │   /home/dbhujoo/data/wordpress  /home/dbhujoo/data/mariadb    │ │
-│  └───────────────────────────────────────────────────────────────┘ │
-│                              │                                     │
-└──────────────────────────────┼─────────────────────────────────────┘
-                               │
-                       Port 443 (HTTPS)
-                               │
-                               ▼
-                          Browser/Client
+┌────────────────────────────────────────────────────────────────────────────┐
+│                              HOST MACHINE                                   │
+│                                                                             │
+│  ┌────────────────────────────────────────────────────────────────────────┐│
+│  │                      Docker Network: inception                          ││
+│  │                                                                         ││
+│  │  ┌─────────┐     ┌─────────────┐     ┌──────────┐     ┌───────────┐    ││
+│  │  │  NGINX  │─────│  WordPress  │─────│ MariaDB  │◄────│  Adminer  │    ││
+│  │  │  :443   │ PHP │   :9000     │ SQL │  :3306   │     │  :8080    │    ││
+│  │  │         │ FPM │  (PHP-FPM)  │     │          │     │ (via nginx)│    ││
+│  │  └────┬────┘     └──────┬──────┘     └────┬─────┘     └───────────┘    ││
+│  │       │                 │                  │                            ││
+│  │       │                 │ cache            │                            ││
+│  │       │                 ▼                  │                            ││
+│  │       │           ┌──────────┐             │        ┌───────────────┐  ││
+│  │       │           │  Redis   │             │        │   cAdvisor    │  ││
+│  │       │           │  :6379   │             │        │    :8081      │  ││
+│  │       │           │ (cache)  │             │        │ (monitoring)  │  ││
+│  │       │           └──────────┘             │        └───────────────┘  ││
+│  │       │                                    │                            ││
+│  │       │    ┌──────────┐     ┌─────────────────┐                        ││
+│  │       │    │   FTP    │     │  Static Site    │                        ││
+│  │       │    │  :21     │     │     :8080       │                        ││
+│  │       │    │(vsftpd)  │     │   (portfolio)   │                        ││
+│  │       │    └────┬─────┘     └─────────────────┘                        ││
+│  │       │         │                                                       ││
+│  └───────┼─────────┼───────────────────────────────────────────────────────┘│
+│          │         │                                                        │
+│  ┌───────▼─────────▼────────────────────────────────────────────────────────┐
+│  │                         Docker Volumes                                    │
+│  │    /home/dbhujoo/data/wordpress    /home/dbhujoo/data/mariadb            │
+│  └───────────────────────────────────────────────────────────────────────────┘
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                    │
+           ┌────────────────────────┼────────────────────────┐
+           │                        │                        │
+    Port 443 (HTTPS)         Port 8080 (HTTP)         Port 8081 (HTTP)
+           │                        │                        │
+           ▼                        ▼                        ▼
+       WordPress             Static Site               cAdvisor
+        + Adminer              Portfolio              Monitoring
 ```
 
 ### 2.3 Container Dependencies
 
 ```yaml
 # Startup order (managed by depends_on)
-1. mariadb    → Starts first (no dependencies)
-2. redis      → Starts independently (no dependencies)
-3. wordpress  → Waits for mariadb (uses redis for caching)
-4. nginx      → Waits for wordpress
+1. mariadb     → Starts first (no dependencies)
+2. redis       → Starts independently (no dependencies)
+3. cadvisor    → Starts independently (monitoring)
+4. static-site → Starts independently (portfolio)
+5. wordpress   → Waits for mariadb (uses redis for caching)
+6. nginx       → Waits for wordpress
+7. adminer     → Waits for mariadb
+8. ftp         → Starts independently (accesses wordpress volume)
 ```
+
+### 2.4 Services Overview
+
+| Service     | Port              | Description                           | Dependencies |
+|-------------|-------------------|---------------------------------------|--------------|
+| nginx       | 443               | HTTPS reverse proxy + TLS termination | wordpress    |
+| wordpress   | 9000              | PHP-FPM application server            | mariadb      |
+| mariadb     | 3306              | MySQL-compatible database             | none         |
+| redis       | 6379              | In-memory cache for WordPress         | none         |
+| ftp         | 21, 21100-21110   | FTP access to WordPress files         | none         |
+| static-site | 8080              | Static portfolio website              | none         |
+| adminer     | 8080 (internal)   | Database management web interface     | mariadb      |
+| cadvisor    | 8081              | Container resource monitoring         | none         |
 
 **Source**: [Docker Compose depends_on](https://docs.docker.com/compose/compose-file/compose-file-v3/#depends_on)
 
@@ -234,17 +275,17 @@ inception/
 
 ### 3.1 Makefile Commands Reference
 
-| Command | Description | Docker Equivalent |
-|---------|-------------|-------------------|
-| `make up` | Build and start all services | `docker compose up -d --build` |
-| `make down` | Stop and remove containers | `docker compose down` |
-| `make stop` | Stop containers (keep state) | `docker compose stop` |
-| `make start` | Start stopped containers | `docker compose start` |
-| `make re` | Rebuild and restart | `make down && make up` |
-| `make clean` | Remove containers + prune | `docker system prune -af` |
-| `make fclean` | Full clean + delete data | Removes volume data |
-| `make status` | Show container status | `docker ps` |
-| `make logs` | Follow all logs | `docker compose logs -f` |
+| Command       | Description                  | Docker Equivalent              |
+|---------------|------------------------------|--------------------------------|
+| `make up`     | Build and start all services | `docker compose up -d --build` |
+| `make down`   | Stop and remove containers   | `docker compose down`          |
+| `make stop`   | Stop containers (keep state) | `docker compose stop`          |
+| `make start`  | Start stopped containers     | `docker compose start`         |
+| `make re`     | Rebuild and restart          | `make down && make up`         |
+| `make clean`  | Remove containers + prune    | `docker system prune -af`      |
+| `make fclean` | Full clean + delete data     | Removes volume data            |
+| `make status` | Show container status        | `docker ps`                    |
+| `make logs`   | Follow all logs              | `docker compose logs -f`       |
 
 ### 3.2 Building the Project
 
@@ -285,10 +326,15 @@ After `make up`, verify the build succeeded:
 make status
 
 # Expected output:
-# CONTAINER ID   IMAGE       STATUS         PORTS                  NAMES
-# xxx            nginx       Up X minutes   0.0.0.0:443->443/tcp   nginx
-# xxx            wordpress   Up X minutes                          wordpress
-# xxx            mariadb     Up X minutes                          mariadb
+# CONTAINER ID   IMAGE        STATUS         PORTS                           NAMES
+# xxx            nginx        Up X minutes   0.0.0.0:443->443/tcp            nginx
+# xxx            wordpress    Up X minutes                                   wordpress
+# xxx            mariadb      Up X minutes                                   mariadb
+# xxx            redis        Up X minutes                                   redis
+# xxx            ftp          Up X minutes   0.0.0.0:21->21/tcp, 21100-21110 ftp
+# xxx            static-site  Up X minutes   0.0.0.0:8080->8080/tcp          static-site
+# xxx            adminer      Up X minutes                                   adminer
+# xxx            cadvisor     Up X minutes   0.0.0.0:8081->8080/tcp          cadvisor
 
 # Check for build errors in logs
 make logs
@@ -538,13 +584,13 @@ wordpress/
 
 ### 5.4 Data Lifecycle
 
-| Action | MariaDB Data | WordPress Data | Recovery |
-|--------|-------------|----------------|----------|
-| `docker stop` | ✅ Preserved | ✅ Preserved | `docker start` |
-| `make down` | ✅ Preserved | ✅ Preserved | `make up` |
-| `make clean` | ✅ Preserved | ✅ Preserved | `make up` |
-| `make fclean` | ❌ **Deleted** | ❌ **Deleted** | Restore from backup |
-| Host reboot | ✅ Preserved | ✅ Preserved | `make up` |
+| Action         | MariaDB Data     | WordPress Data   | Recovery             |
+|----------------|------------------|------------------|----------------------|
+| `docker stop`  | ✅ Preserved      | ✅ Preserved      | `docker start`       |
+| `make down`    | ✅ Preserved      | ✅ Preserved      | `make up`            |
+| `make clean`   | ✅ Preserved      | ✅ Preserved      | `make up`            |
+| `make fclean`  | ❌ **Deleted**   | ❌ **Deleted**   | Restore from backup  |
+| Host reboot    | ✅ Preserved      | ✅ Preserved      | `make up`            |
 
 ### 5.5 Backup and Restore
 
@@ -732,6 +778,106 @@ Key settings:
 
 **Source**: [PHP-FPM Configuration](https://www.php.net/manual/en/install.fpm.configuration.php)
 
+### 6.5 Bonus Services Configuration
+
+#### Static Site (Portfolio)
+
+**File**: `srcs/requirements/bonus/static-site/Dockerfile`
+```dockerfile
+FROM debian:bookworm
+
+RUN apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY site/ /var/www/static/
+
+RUN chown -R www-data:www-data /var/www/static
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**NGINX Config**: `srcs/requirements/bonus/static-site/conf/nginx.conf`
+- Listens on port 8080
+- Serves static files from `/var/www/static`
+- Includes caching headers for CSS/JS/images
+
+**Access**: `http://localhost:8080`
+
+#### Adminer (Database Management)
+
+**File**: `srcs/requirements/bonus/adminer/Dockerfile`
+```dockerfile
+FROM debian:bookworm
+
+RUN apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y \
+        php8.2 \
+        php8.2-mysql \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /var/www/adminer \
+    && wget https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php \
+       -O /var/www/adminer/index.php \
+    && chown -R www-data:www-data /var/www/adminer
+
+WORKDIR /var/www/adminer
+
+EXPOSE 8080
+
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/adminer"]
+```
+
+**Access**: Through NGINX reverse proxy (internal port 8080)
+- Server: `mariadb`
+- Username: Use values from `.env`
+- Password: Use secret from `db_password.txt`
+- Database: `wordpress`
+
+**Source**: [Adminer Documentation](https://www.adminer.org/)
+
+#### cAdvisor (Container Monitoring)
+
+**File**: `srcs/requirements/bonus/cadvisor/Dockerfile`
+```dockerfile
+FROM debian:bookworm
+
+RUN apt-get update && apt-get install -y wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://github.com/google/cadvisor/releases/download/v0.47.0/cadvisor-v0.47.0-linux-amd64 \
+    -O /usr/local/bin/cadvisor \
+    && chmod +x /usr/local/bin/cadvisor
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/cadvisor"]
+```
+
+**Volume Mounts** (required for monitoring):
+```yaml
+volumes:
+  - /:/rootfs:ro
+  - /var/run:/var/run:ro
+  - /sys:/sys:ro
+  - /var/lib/docker/:/var/lib/docker:ro
+```
+
+**Access**: `http://localhost:8081`
+
+Features:
+- Real-time container metrics (CPU, memory, network, disk)
+- Historical data visualization
+- Per-container resource breakdown
+
+**Source**: [cAdvisor GitHub](https://github.com/google/cadvisor)
+
 ---
 
 ## 7. Debugging and Development
@@ -853,7 +999,62 @@ docker exec ftp ls -la /var/www/wordpress
 curl -v ftp://ftpuser:password@127.0.0.1/
 ```
 
-### 7.7 Network Debugging
+### 7.8 Static Site Debugging
+
+```bash
+# Check static site container status
+docker logs static-site 2>&1 | tail -50
+
+# Access container
+docker exec -it static-site bash
+
+# Test NGINX configuration
+docker exec static-site nginx -t
+
+# Verify files are served
+curl -I http://localhost:8080
+
+# Check file permissions
+docker exec static-site ls -la /var/www/static/
+```
+
+### 7.9 Adminer Debugging
+
+```bash
+# Check Adminer container status
+docker logs adminer 2>&1 | tail -50
+
+# Access container
+docker exec -it adminer bash
+
+# Check PHP process
+docker exec adminer ps aux | grep php
+
+# Test connectivity to MariaDB from Adminer
+docker exec adminer ping mariadb
+
+# Verify Adminer is listening
+docker exec adminer netstat -tlnp
+```
+
+### 7.10 cAdvisor Debugging
+
+```bash
+# Check cAdvisor container status
+docker logs cadvisor 2>&1 | tail -50
+
+# Test cAdvisor API
+curl http://localhost:8081/api/v1.0/containers/
+
+# Check if host volumes are accessible
+docker exec cadvisor ls -la /rootfs/
+docker exec cadvisor ls -la /var/lib/docker/
+
+# Verify cAdvisor metrics endpoint
+curl http://localhost:8081/metrics | head -50
+```
+
+### 7.11 Network Debugging
 
 ```bash
 # Test HTTPS connection
@@ -867,21 +1068,24 @@ docker exec wordpress netstat -tlnp
 docker exec wordpress getent hosts mariadb
 ```
 
-### 7.8 Common Issues and Solutions
+### 7.12 Common Issues and Solutions
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Container keeps restarting | Script error or misconfiguration | `docker logs <container>` |
-| Cannot connect to database | MariaDB not ready | Check `depends_on` and wait logic |
-| 502 Bad Gateway | PHP-FPM not running | `docker restart wordpress` |
-| SSL certificate error | Self-signed certificate | Accept in browser (expected) |
-| Permission denied | Volume ownership | `chown -R www-data:www-data` |
-| Port already in use | Another service on 443 | `sudo lsof -i :443` |
-| Redis not connected | Redis container not running | `docker restart redis` |
-| Redis cache not working | Plugin not enabled | `wp redis enable --allow-root` |
-| FTP connection refused | vsftpd not running | `docker restart ftp` |
-| FTP login failed | Wrong credentials | Check `.env` and `ftp_password.txt` |
-| FTP passive mode error | Ports not exposed | Verify ports 21100-21110 are open |
+| Issue                         | Cause                           | Solution                               |
+|-------------------------------|--------------------------------|----------------------------------------|
+| Container keeps restarting    | Script error or misconfiguration | `docker logs <container>`            |
+| Cannot connect to database    | MariaDB not ready               | Check `depends_on` and wait logic      |
+| 502 Bad Gateway               | PHP-FPM not running             | `docker restart wordpress`             |
+| SSL certificate error         | Self-signed certificate         | Accept in browser (expected)           |
+| Permission denied             | Volume ownership                | `chown -R www-data:www-data`           |
+| Port already in use           | Another service on 443/8080/8081| `sudo lsof -i :<port>`                 |
+| Redis not connected           | Redis container not running     | `docker restart redis`                 |
+| Redis cache not working       | Plugin not enabled              | `wp redis enable --allow-root`         |
+| FTP connection refused        | vsftpd not running              | `docker restart ftp`                   |
+| FTP login failed              | Wrong credentials               | Check `.env` and `ftp_password.txt`    |
+| FTP passive mode error        | Ports not exposed               | Verify ports 21100-21110 are open      |
+| Static site not accessible    | Port 8080 conflict              | Check another service on 8080          |
+| Adminer can't connect to DB   | Network issue                   | Verify both on `inception` network     |
+| cAdvisor no metrics           | Missing volume mounts           | Check /sys, /var/run are mounted       |
 
 ---
 
@@ -899,6 +1103,9 @@ docker exec wordpress getent hosts mariadb
 - [PHP-FPM Documentation](https://www.php.net/manual/en/install.fpm.php)
 - [Redis Documentation](https://redis.io/documentation)
 - [Redis Object Cache Plugin](https://wordpress.org/plugins/redis-cache/)
+- [Adminer Documentation](https://www.adminer.org/)
+- [cAdvisor GitHub](https://github.com/google/cadvisor)
+- [vsftpd Documentation](https://security.appspot.com/vsftpd.html)
 
 ### 8.2 Best Practices
 
@@ -915,4 +1122,5 @@ docker exec wordpress getent hosts mariadb
 ---
 
 *Document created on January 29, 2026 by dbhujoo*  
+*Last updated on February 3, 2026*  
 *Inception Project - 42 School*
