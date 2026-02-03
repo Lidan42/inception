@@ -23,12 +23,12 @@
 
 Before setting up the development environment, ensure the following are installed:
 
-| Software       | Minimum Version | Verification Command      |
-|----------------|-----------------|---------------------------|
-| Docker Engine  | 20.10+          | `docker --version`        |
-| Docker Compose | 2.0+            | `docker compose version`  |
-| Make           | 4.0+            | `make --version`          |
-| Git            | 2.0+            | `git --version`           |
+| Software       | Minimum Version | Verification Command     |
+|----------------|-----------------|--------------------------||
+| Docker Engine  | 20.10+          | `docker --version`       |
+| Docker Compose | 2.0+            | `docker compose version` |
+| Make           | 4.0+            | `make --version`         |
+| Git            | 2.0+            | `git --version`          |
 
 **Installation on Debian/Ubuntu:**
 ```bash
@@ -256,16 +256,16 @@ inception/
 
 ### 2.4 Services Overview
 
-| Service     | Port              | Description                           | Dependencies |
-|-------------|-------------------|---------------------------------------|--------------|
-| nginx       | 443               | HTTPS reverse proxy + TLS termination | wordpress    |
-| wordpress   | 9000              | PHP-FPM application server            | mariadb      |
-| mariadb     | 3306              | MySQL-compatible database             | none         |
-| redis       | 6379              | In-memory cache for WordPress         | none         |
-| ftp         | 21, 21100-21110   | FTP access to WordPress files         | none         |
-| static-site | 8080              | Static portfolio website              | none         |
-| adminer     | 8080 (internal)   | Database management web interface     | mariadb      |
-| cadvisor    | 8081              | Container resource monitoring         | none         |
+| Service     | Port            | Description                           | Dependencies |
+|-------------|-----------------|---------------------------------------|--------------|
+| nginx       | 443             | HTTPS reverse proxy + TLS termination | wordpress    |
+| wordpress   | 9000            | PHP-FPM application server            | mariadb      |
+| mariadb     | 3306            | MySQL-compatible database             | none         |
+| redis       | 6379            | In-memory cache for WordPress         | none         |
+| ftp         | 21, 21100-21110 | FTP access to WordPress files         | none         |
+| static-site | 8080            | Static portfolio website              | none         |
+| adminer     | 8080 (internal) | Database management web interface     | mariadb      |
+| cadvisor    | 8081            | Container resource monitoring         | none         |
 
 **Source**: [Docker Compose depends_on](https://docs.docker.com/compose/compose-file/compose-file-v3/#depends_on)
 
@@ -275,17 +275,17 @@ inception/
 
 ### 3.1 Makefile Commands Reference
 
-| Command       | Description                  | Docker Equivalent              |
-|---------------|------------------------------|--------------------------------|
-| `make up`     | Build and start all services | `docker compose up -d --build` |
-| `make down`   | Stop and remove containers   | `docker compose down`          |
-| `make stop`   | Stop containers (keep state) | `docker compose stop`          |
-| `make start`  | Start stopped containers     | `docker compose start`         |
-| `make re`     | Rebuild and restart          | `make down && make up`         |
-| `make clean`  | Remove containers + prune    | `docker system prune -af`      |
-| `make fclean` | Full clean + delete data     | Removes volume data            |
-| `make status` | Show container status        | `docker ps`                    |
-| `make logs`   | Follow all logs              | `docker compose logs -f`       |
+| Command       | Description                  | Docker Equivalent               |
+|---------------|------------------------------|---------------------------------|
+| `make up`     | Build and start all services | `docker compose up -d --build`  |
+| `make down`   | Stop and remove containers   | `docker compose down`           |
+| `make stop`   | Stop containers (keep state) | `docker compose stop`           |
+| `make start`  | Start stopped containers     | `docker compose start`          |
+| `make re`     | Rebuild and restart          | `make down && make up`          |
+| `make clean`  | Remove containers + prune    | `docker system prune -af`       |
+| `make fclean` | Full clean + delete data     | Removes volume data             |
+| `make status` | Show container status        | `docker ps`                     |
+| `make logs`   | Follow all logs              | `docker compose logs -f`        |
 
 ### 3.2 Building the Project
 
@@ -584,13 +584,13 @@ wordpress/
 
 ### 5.4 Data Lifecycle
 
-| Action         | MariaDB Data     | WordPress Data   | Recovery             |
-|----------------|------------------|------------------|----------------------|
-| `docker stop`  | ✅ Preserved      | ✅ Preserved      | `docker start`       |
-| `make down`    | ✅ Preserved      | ✅ Preserved      | `make up`            |
-| `make clean`   | ✅ Preserved      | ✅ Preserved      | `make up`            |
-| `make fclean`  | ❌ **Deleted**   | ❌ **Deleted**   | Restore from backup  |
-| Host reboot    | ✅ Preserved      | ✅ Preserved      | `make up`            |
+| Action         | MariaDB Data   | WordPress Data | Recovery            |
+|----------------|----------------|----------------|---------------------|
+| `docker stop`  | ✅ Preserved   | ✅ Preserved   | `docker start`      |
+| `make down`    | ✅ Preserved   | ✅ Preserved   | `make up`           |
+| `make clean`   | ✅ Preserved   | ✅ Preserved   | `make up`           |
+| `make fclean`  | ❌ **Deleted** | ❌ **Deleted** | Restore from backup |
+| Host reboot    | ✅ Preserved   | ✅ Preserved   | `make up`           |
 
 ### 5.5 Backup and Restore
 
@@ -970,8 +970,8 @@ docker exec -it redis redis-cli MONITOR
 # Check Redis logs
 docker logs redis 2>&1 | tail -50
 
-# Test connectivity from WordPress
-docker exec wordpress redis-cli -h redis ping
+# Test connectivity from Redis container
+docker exec redis redis-cli ping
 ```
 
 ### 7.6 FTP Debugging
@@ -1070,22 +1070,22 @@ docker exec wordpress getent hosts mariadb
 
 ### 7.12 Common Issues and Solutions
 
-| Issue                         | Cause                           | Solution                               |
-|-------------------------------|--------------------------------|----------------------------------------|
-| Container keeps restarting    | Script error or misconfiguration | `docker logs <container>`            |
-| Cannot connect to database    | MariaDB not ready               | Check `depends_on` and wait logic      |
-| 502 Bad Gateway               | PHP-FPM not running             | `docker restart wordpress`             |
-| SSL certificate error         | Self-signed certificate         | Accept in browser (expected)           |
-| Permission denied             | Volume ownership                | `chown -R www-data:www-data`           |
-| Port already in use           | Another service on 443/8080/8081| `sudo lsof -i :<port>`                 |
-| Redis not connected           | Redis container not running     | `docker restart redis`                 |
-| Redis cache not working       | Plugin not enabled              | `wp redis enable --allow-root`         |
-| FTP connection refused        | vsftpd not running              | `docker restart ftp`                   |
-| FTP login failed              | Wrong credentials               | Check `.env` and `ftp_password.txt`    |
-| FTP passive mode error        | Ports not exposed               | Verify ports 21100-21110 are open      |
-| Static site not accessible    | Port 8080 conflict              | Check another service on 8080          |
-| Adminer can't connect to DB   | Network issue                   | Verify both on `inception` network     |
-| cAdvisor no metrics           | Missing volume mounts           | Check /sys, /var/run are mounted       |
+| Issue                       | Cause                            | Solution                          |
+|-----------------------------|----------------------------------|-----------------------------------|
+| Container keeps restarting  | Script error or misconfiguration | `docker logs <container>`         |
+| Cannot connect to database  | MariaDB not ready                | Check `depends_on` and wait logic |
+| 502 Bad Gateway             | PHP-FPM not running              | `docker restart wordpress`        |
+| SSL certificate error       | Self-signed certificate          | Accept in browser (expected)      |
+| Permission denied           | Volume ownership                 | `chown -R www-data:www-data`      |
+| Port already in use         | Another service on 443/8080/8081 | `sudo lsof -i :<port>`            |
+| Redis not connected         | Redis container not running      | `docker restart redis`            |
+| Redis cache not working     | Plugin not enabled               | `wp redis enable --allow-root`    |
+| FTP connection refused      | vsftpd not running               | `docker restart ftp`              |
+| FTP login failed            | Wrong credentials                | Check `.env` and `ftp_password.txt` |
+| FTP passive mode error      | Ports not exposed                | Verify ports 21100-21110 are open |
+| Static site not accessible  | Port 8080 conflict               | Check another service on 8080     |
+| Adminer can't connect to DB | Network issue                    | Verify both on `inception` network` |
+| cAdvisor no metrics         | Missing volume mounts            | Check /sys, /var/run are mounted  |
 
 ---
 

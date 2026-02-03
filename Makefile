@@ -30,8 +30,8 @@ clean: down
 	docker system prune -af
 
 fclean: clean
-	rm -rf /home/dbhujoo/data/mariadb/*
-	rm -rf /home/dbhujoo/data/wordpress/*
+	sudo rm -rf /home/dbhujoo/data/mariadb/*
+	sudo rm -rf /home/dbhujoo/data/wordpress/*
 
 status:
 	docker ps
