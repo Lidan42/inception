@@ -21,7 +21,7 @@
 **Commande :**
 ```bash
 # Vérifier que les secrets ne sont pas dans le repo (hors du dossier secrets/)
-grep -r "password" --include="*.yml" --include="*.conf" --include="*.sh" /home/dbhujoo/Desktop/inception/
+grep -r "password" --include="*.yml" --include="*.conf" --include="*.sh" /home/dbhujoo/Bureau/inception/
 ```
 
 **Réponse attendue :** Les mots de passe ne doivent pas apparaître en clair. Le projet utilise :
@@ -39,8 +39,8 @@ grep -r "password" --include="*.yml" --include="*.conf" --include="*.sh" /home/d
 
 **Commande :**
 ```bash
-ls -la /home/dbhujoo/Desktop/inception/
-ls -la /home/dbhujoo/Desktop/inception/srcs/
+ls -la /home/dbhujoo/Bureau/inception/
+ls -la /home/dbhujoo/Bureau/inception/srcs/
 ```
 
 **Éléments à vérifier :**
@@ -60,15 +60,15 @@ docker stop $(docker ps -qa); docker rm $(docker ps -qa); docker rmi -f $(docker
 **Commandes de vérification :**
 ```bash
 # Vérifier l'absence de 'network: host'
-grep -i "network.*host" /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml
+grep -i "network.*host" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
 # ✅ Aucun résultat attendu
 
 # Vérifier l'absence de 'links:'
-grep -i "links:" /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml
+grep -i "links:" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
 # ✅ Aucun résultat attendu
 
 # Vérifier la présence de 'networks:'
-grep -i "networks:" /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml
+grep -i "networks:" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
 # ✅ Doit retourner des résultats (réseau 'inception' configuré)
 ```
 
@@ -77,15 +77,15 @@ grep -i "networks:" /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml
 **Commandes :**
 ```bash
 # Vérifier l'absence de '--link'
-grep -r "\-\-link" /home/dbhujoo/Desktop/inception/
+grep -r "\-\-link" /home/dbhujoo/Bureau/inception/
 # ✅ Aucun résultat attendu
 
 # Vérifier l'absence de 'tail -f' ou commandes en background dans ENTRYPOINT
-grep -r "tail -f" /home/dbhujoo/Desktop/inception/srcs/requirements/
+grep -r "tail -f" /home/dbhujoo/Bureau/inception/srcs/requirements/
 # ✅ Aucun résultat attendu
 
 # Vérifier l'absence de boucles infinies
-grep -rE "sleep infinity|tail -f /dev/null|tail -f /dev/random" /home/dbhujoo/Desktop/inception/
+grep -rE "sleep infinity|tail -f /dev/null|tail -f /dev/random" /home/dbhujoo/Bureau/inception/
 # ✅ Aucun résultat attendu
 ```
 
@@ -93,7 +93,7 @@ grep -rE "sleep infinity|tail -f /dev/null|tail -f /dev/random" /home/dbhujoo/De
 
 **Commande :**
 ```bash
-grep -r "^FROM" /home/dbhujoo/Desktop/inception/srcs/requirements/
+grep -r "^FROM" /home/dbhujoo/Bureau/inception/srcs/requirements/
 ```
 
 **Résultat attendu :**
@@ -113,7 +113,7 @@ requirements/bonus/static-site/Dockerfile:FROM debian:bookworm
 
 **Commande :**
 ```bash
-cd /home/dbhujoo/Desktop/inception && make
+cd /home/dbhujoo/Bureau/inception && make
 ```
 
 ---
@@ -165,7 +165,7 @@ cd /home/dbhujoo/Desktop/inception && make
 
 **Commande :**
 ```bash
-head -5 /home/dbhujoo/Desktop/inception/README.md
+head -5 /home/dbhujoo/Bureau/inception/README.md
 ```
 
 **Éléments à vérifier :**
@@ -179,12 +179,12 @@ head -5 /home/dbhujoo/Desktop/inception/README.md
 **Commandes :**
 ```bash
 # Vérifier présence des fichiers
-ls -la /home/dbhujoo/Desktop/inception/USERDOC.md
-ls -la /home/dbhujoo/Desktop/inception/DEVDEC.md
+ls -la /home/dbhujoo/Bureau/inception/USERDOC.md
+ls -la /home/dbhujoo/Bureau/inception/DEVDEC.md
 
 # Vérifier le contenu
-head -50 /home/dbhujoo/Desktop/inception/USERDOC.md
-head -50 /home/dbhujoo/Desktop/inception/DEVDEC.md
+head -50 /home/dbhujoo/Bureau/inception/USERDOC.md
+head -50 /home/dbhujoo/Bureau/inception/DEVDEC.md
 ```
 
 **Éléments présents :**
@@ -224,15 +224,15 @@ openssl s_client -connect dbhujoo.42.fr:443 -tls1_3 </dev/null 2>/dev/null | gre
 
 ```bash
 # Vérifier les Dockerfiles
-ls /home/dbhujoo/Desktop/inception/srcs/requirements/*/Dockerfile
-ls /home/dbhujoo/Desktop/inception/srcs/requirements/bonus/*/Dockerfile
+ls /home/dbhujoo/Bureau/inception/srcs/requirements/*/Dockerfile
+ls /home/dbhujoo/Bureau/inception/srcs/requirements/bonus/*/Dockerfile
 
 # Vérifier que les images ont le même nom que les services
 docker images --format "table {{.Repository}}\t{{.Tag}}"
 # ✅ Images : mariadb, nginx, wordpress, redis, ftp, adminer, cadvisor, static-site
 
 # Vérifier les conteneurs créés
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps
 ```
 
 ### 3.6 Docker Network
@@ -258,10 +258,10 @@ docker network inspect srcs_inception
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps nginx
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps nginx
 
 # Vérifier le Dockerfile
-cat /home/dbhujoo/Desktop/inception/srcs/requirements/nginx/Dockerfile
+cat /home/dbhujoo/Bureau/inception/srcs/requirements/nginx/Dockerfile
 
 # Tester port 80 (doit échouer)
 curl -I http://localhost:80 2>&1
@@ -282,10 +282,10 @@ echo | openssl s_client -connect dbhujoo.42.fr:443 2>/dev/null | openssl x509 -n
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps wordpress
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps wordpress
 
 # Vérifier qu'il n'y a PAS NGINX dans le Dockerfile
-grep -i nginx /home/dbhujoo/Desktop/inception/srcs/requirements/wordpress/Dockerfile
+grep -i nginx /home/dbhujoo/Bureau/inception/srcs/requirements/wordpress/Dockerfile
 # ✅ Aucun résultat
 
 # Vérifier le volume
@@ -309,10 +309,10 @@ ls -la /home/dbhujoo/data/wordpress/
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps mariadb
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps mariadb
 
 # Vérifier qu'il n'y a PAS NGINX dans le Dockerfile
-grep -i nginx /home/dbhujoo/Desktop/inception/srcs/requirements/mariadb/Dockerfile
+grep -i nginx /home/dbhujoo/Bureau/inception/srcs/requirements/mariadb/Dockerfile
 # ✅ Aucun résultat
 
 # Vérifier le volume
@@ -340,10 +340,10 @@ SELECT * FROM wp_users;
 sudo reboot
 
 # 2. Après redémarrage, relancer docker compose
-cd /home/dbhujoo/Desktop/inception && make
+cd /home/dbhujoo/Bureau/inception && make
 
 # 3. Vérifier que tout fonctionne
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps
 
 # 4. Vérifier que les données persistent
 # - Le site WordPress doit afficher les mêmes contenus
@@ -359,9 +359,13 @@ curl -kI https://dbhujoo.42.fr
 # 1. Modifier docker_compose.yml
 # Changer : ports: - "443:443" 
 # En :      ports: - "8443:443"
+# Update le wp url dans le .env
+# docker exec redis redis-cli FLUSHALL
+# docker exec wordpress wp option update siteurl 'https://dbhujoo.42.fr:8443' --allow-root --path=/var/www/wordpress
+# docker exec wordpress wp option update home 'https://dbhujoo.42.fr:8443' --allow-root --path=/var/www/wordpress
 
 # 2. Rebuild et restart
-cd /home/dbhujoo/Desktop/inception
+cd /home/dbhujoo/Bureau/inception
 make re
 
 # 3. Vérifier
@@ -380,10 +384,10 @@ curl -kI https://dbhujoo.42.fr:8443
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps redis
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps redis
 
 # Vérifier le Dockerfile
-cat /home/dbhujoo/Desktop/inception/srcs/requirements/bonus/redis/Dockerfile
+cat /home/dbhujoo/Bureau/inception/srcs/requirements/bonus/redis/Dockerfile
 
 # Tester la connexion Redis
 docker exec -it redis redis-cli ping
@@ -406,7 +410,7 @@ docker exec -it redis redis-cli keys '*'
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps ftp
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps ftp
 
 # Vérifier les ports
 docker ps --format "table {{.Names}}\t{{.Ports}}" | grep ftp
@@ -427,7 +431,7 @@ ls
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps static-site
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps static-site
 
 # Accéder au site
 curl -I http://localhost:8080
@@ -446,7 +450,7 @@ curl -I http://localhost:8080
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps adminer
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps adminer
 
 # Accéder via NGINX (proxy)
 # https://dbhujoo.42.fr/adminer/
@@ -466,7 +470,7 @@ docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps adm
 
 ```bash
 # Vérifier le conteneur
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml ps cadvisor
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps cadvisor
 
 # Accéder à l'interface web
 # http://localhost:8081
@@ -493,9 +497,9 @@ curl http://localhost:8081/metrics | head -50
 docker ps -a
 
 # Voir les logs d'un service
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml logs nginx
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml logs wordpress
-docker compose -f /home/dbhujoo/Desktop/inception/srcs/docker_compose.yml logs mariadb
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml logs nginx
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml logs wordpress
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml logs mariadb
 
 # Logs en temps réel
 make logs

@@ -21,16 +21,16 @@
 
 This Docker infrastructure provides a **complete and secure web stack** composed of the following services:
 
-| Service         | Port            | Role                                |
-|-----------------|-----------------|-------------------------------------|
-| **NGINX**       | 443             | Web server, reverse proxy, TLS      |
-| **WordPress**   | 9000            | CMS with PHP-FPM                    |
-| **MariaDB**     | 3306            | Relational database                 |
-| **Redis**       | 6379            | In-memory cache                     |
-| **FTP**         | 21, 21100-21110 | File transfer to WordPress          |
-| **Adminer**     | 8080 (internal) | Database management interface       |
-| **cAdvisor**    | 8081            | Container monitoring                |
-| **Static Site** | 8080            | Portfolio website                   |
+| Service         | Port            | Role                           |
+|-----------------|-----------------|--------------------------------|
+| **NGINX**       | 443             | Web server, reverse proxy, TLS |
+| **WordPress**   | 9000            | CMS with PHP-FPM               |
+| **MariaDB**     | 3306            | Relational database            |
+| **Redis**       | 6379            | In-memory cache                |
+| **FTP**         | 21, 21100-21110 | File transfer to WordPress     |
+| **Adminer**     | 8080 (internal) | Database management interface  |
+| **cAdvisor**    | 8081            | Container monitoring           |
+| **Static Site** | 8080            | Portfolio website              |
 
 ### 1.1 NGINX (Web Server & Reverse Proxy)
 
@@ -87,11 +87,11 @@ This Docker infrastructure provides a **complete and secure web stack** composed
 
 #### How Redis improves WordPress performance:
 
-| Without Redis | With Redis |
-|---------------|------------|
+| Without Redis                        | With Redis                                |
+|--------------------------------------|-------------------------------------------|
 | Every page load queries the database | Frequently accessed data is cached in RAM |
-| Slower response times | ~1000x faster data retrieval |
-| Higher database load | Reduced database queries |
+| Slower response times                | ~1000x faster data retrieval              |
+| Higher database load                 | Reduced database queries                  |
 
 #### WordPress Integration:
 
@@ -116,13 +116,13 @@ Redis is integrated via the **Redis Object Cache** plugin, which automatically c
 
 #### FTP Connection Details:
 
-| Parameter | Value |
-|-----------|-------|
-| Host | `dbhujoo.42.fr` or `127.0.0.1` |
-| Port | `21` |
-| User | `ftpuser` (configured in .env) |
-| Password | See `secrets/ftp_password.txt` |
-| Protocol | FTP (passive mode) |
+| Parameter | Value                          |
+|-----------|--------------------------------|
+| Host      | `dbhujoo.42.fr` or `127.0.0.1` |
+| Port      | `21`                           |
+| User      | `ftpuser` (configured in .env) |
+| Password  | See `secrets/ftp_password.txt` |
+| Protocol  | FTP (passive mode)             |
 
 #### Use Cases:
 
@@ -145,12 +145,12 @@ Redis is integrated via the **Redis Object Cache** plugin, which automatically c
 
 #### Connection Details:
 
-| Parameter | Value |
-|-----------|-------|
-| Server    | `mariadb` |
+| Parameter | Value                           |
+|-----------|---------------------------------|
+| Server    | `mariadb`                       |
 | Username  | Value from `SQL_USER` in `.env` |
-| Password  | See `secrets/db_password.txt` |
-| Database  | `wordpress` |
+| Password  | See `secrets/db_password.txt`   |
+| Database  | `wordpress`                     |
 
 ### 1.7 cAdvisor (Container Monitoring)
 
@@ -166,12 +166,12 @@ Redis is integrated via the **Redis Object Cache** plugin, which automatically c
 
 #### Available Metrics:
 
-| Metric | Description |
-|--------|-------------|
-| CPU    | Usage percentage per container |
-| Memory | RAM usage and limits |
-| Network| Bytes sent/received |
-| Disk   | I/O operations and space |
+| Metric  | Description                    |
+|---------|--------------------------------|
+| CPU     | Usage percentage per container |
+| Memory  | RAM usage and limits           |
+| Network | Bytes sent/received            |
+| Disk    | I/O operations and space       |
 
 ### 1.8 Static Site (Portfolio)
 

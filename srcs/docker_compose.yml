@@ -31,7 +31,7 @@ services:
     depends_on:
       - wordpress
     ports:
-      - "443:443"
+      - "8443:443"
   wordpress:
     build:
       context: requirements/wordpress
