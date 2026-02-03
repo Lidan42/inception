@@ -9,132 +9,102 @@
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">DB</div>
-        <ul class="nav-links">
-            <li><a href="#about">À propos</a></li>
-            <li><a href="#skills">Compétences</a></li>
-            <li><a href="#projects">Projets</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </nav>
-
-    <header class="hero">
-        <div class="hero-content">
-            <h1>Dilan Bhujoo</h1>
-            <p class="tagline">Étudiant 42 | Développeur passionné</p>
-            <a href="#projects" class="btn">Voir mes projets</a>
-        </div>
-    </header>
-
-    <section id="about" class="section">
-        <div class="container">
-            <h2>À propos</h2>
-            <div class="about-content">
-                <p>
-                    Passionné par l'informatique et le développement, je suis actuellement étudiant à l'école 42.
-                    J'aime relever des défis techniques et apprendre de nouvelles technologies.
-                </p>
-                <p>
-                    Ce site fait partie du projet <strong>Inception</strong>, une infrastructure Docker complète
-                    comprenant WordPress, MariaDB, NGINX, Redis, FTP et ce site statique.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section id="skills" class="section section-alt">
-        <div class="container">
-            <h2>Compétences</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <div class="skill-icon">🐳</div>
-                    <h3>Docker</h3>
-                    <p>Containerisation, Docker Compose, réseaux</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">💻</div>
-                    <h3>C / C++</h3>
-                    <p>Programmation système, algorithmes</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">🐧</div>
-                    <h3>Linux</h3>
-                    <p>Administration système, shell scripting</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">🌐</div>
-                    <h3>Web</h3>
-                    <p>HTML, CSS, JavaScript, NGINX</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">🗄️</div>
-                    <h3>Bases de données</h3>
-                    <p>MariaDB, Redis, SQL</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">🔧</div>
-                    <h3>DevOps</h3>
-                    <p>CI/CD, Git, automatisation</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section id="projects" class="section">
         <div class="container">
-            <h2>Projets</h2>
+            <h2>42 Projects</h2>
             <div class="projects-grid">
-                <div class="project-card">
-                    <h3>🏗️ Inception</h3>
-                    <p>Infrastructure Docker multi-services avec WordPress, MariaDB, NGINX, Redis et FTP.</p>
-                    <span class="tag">Docker</span>
-                    <span class="tag">DevOps</span>
-                </div>
+                <!-- Common Core Projects -->
                 <div class="project-card">
                     <h3>📚 Libft</h3>
-                    <p>Recréation de fonctions de la librairie standard C.</p>
+                    <p>Recreation of standard C library functions. First project of the curriculum.</p>
                     <span class="tag">C</span>
-                    <span class="tag">Algorithmie</span>
+                    <span class="tag">Algorithms</span>
                 </div>
                 <div class="project-card">
                     <h3>🖥️ ft_printf</h3>
-                    <p>Implémentation de la fonction printf en C.</p>
+                    <p>Implementation of the printf function with conversion and flag handling.</p>
                     <span class="tag">C</span>
                     <span class="tag">Variadic</span>
                 </div>
                 <div class="project-card">
-                    <h3>🔄 push_swap</h3>
-                    <p>Algorithme de tri avec deux piles et un set d'opérations limité.</p>
+                    <h3>📖 get_next_line</h3>
+                    <p>Function that reads a line from a file descriptor with buffer management.</p>
                     <span class="tag">C</span>
-                    <span class="tag">Algorithmes</span>
+                    <span class="tag">File I/O</span>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="section section-alt">
-        <div class="container">
-            <h2>Contact</h2>
-            <div class="contact-content">
-                <p>Envie de collaborer ou de discuter ? N'hésitez pas à me contacter !</p>
-                <div class="contact-links">
-                    <a href="mailto:dbhujoo@student.42.fr" class="contact-link">
-                        📧 dbhujoo@student.42.fr
-                    </a>
-                    <a href="https://github.com/dbhujoo" class="contact-link" target="_blank">
-                        🐙 GitHub
-                    </a>
-                    <a href="https://linkedin.com/in/dbhujoo" class="contact-link" target="_blank">
-                        💼 LinkedIn
-                    </a>
+                <div class="project-card">
+                    <h3>🐚 Born2beroot</h3>
+                    <p>Debian virtual machine setup with partitioning, sudo, SSH and UFW configuration.</p>
+                    <span class="tag">Linux</span>
+                    <span class="tag">Sysadmin</span>
+                </div>
+                <div class="project-card">
+                    <h3>🔄 push_swap</h3>
+                    <p>Optimized sorting algorithm using two stacks and a limited set of operations.</p>
+                    <span class="tag">C</span>
+                    <span class="tag">Algorithms</span>
+                </div>
+                <div class="project-card">
+                    <h3>🍽️ Philosophers</h3>
+                    <p>Dining philosophers problem - thread management, mutexes and data race handling.</p>
+                    <span class="tag">C</span>
+                    <span class="tag">Threads</span>
+                </div>
+                <div class="project-card">
+                    <h3>🐚 Minishell</h3>
+                    <p>Unix shell implementation with pipes, redirections and environment variables.</p>
+                    <span class="tag">C</span>
+                    <span class="tag">Shell</span>
+                </div>
+                <div class="project-card">
+                    <h3>🎮 so_long</h3>
+                    <p>Small 2D game built with the MiniLibX graphics library.</p>
+                    <span class="tag">C</span>
+                    <span class="tag">Graphics</span>
+                </div>
+                <div class="project-card">
+                    <h3>🌐 NetPractice</h3>
+                    <p>Network configuration exercises - subnetting, routing and IP addressing.</p>
+                    <span class="tag">Network</span>
+                    <span class="tag">TCP/IP</span>
+                </div>
+                <div class="project-card">
+                    <h3>➕ CPP Modules</h3>
+                    <p>Series of modules to learn C++: classes, inheritance, polymorphism, STL.</p>
+                    <span class="tag">C++</span>
+                    <span class="tag">OOP</span>
+                </div>
+                <div class="project-card">
+                    <h3>🎯 Cub3D</h3>
+                    <p>Raycasting engine inspired by Wolfenstein 3D with textures and minimap.</p>
+                    <span class="tag">C</span>
+                    <span class="tag">Raycasting</span>
+                </div>
+                <div class="project-card">
+                    <h3>💬 ft_irc</h3>
+                    <p>IRC server in C++ compatible with standard IRC clients.</p>
+                    <span class="tag">C++</span>
+                    <span class="tag">Network</span>
+                </div>
+                <div class="project-card">
+                    <h3>🏓 ft_transcendence</h3>
+                    <p>Full-stack web application with multiplayer Pong game, chat and authentication.</p>
+                    <span class="tag">TypeScript</span>
+                    <span class="tag">Web</span>
+                </div>
+                <div class="project-card">
+                    <h3>🏗️ Inception</h3>
+                    <p>Multi-service Docker infrastructure with WordPress, MariaDB, NGINX, Redis and FTP.</p>
+                    <span class="tag">Docker</span>
+                    <span class="tag">DevOps</span>
                 </div>
             </div>
         </div>
     </section>
 
     <footer class="footer">
-        <p>&copy; 2026 Dilan Bhujoo - Projet Inception 42</p>
+        <p>&copy; 2026 Dilan Bhujoo - Inception Project 42</p>
     </footer>
 
     <script src="script.js"></script>
