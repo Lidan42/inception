@@ -14,6 +14,7 @@
 6. [Service Status Verification](#6-service-status-verification)
 7. [Troubleshooting](#7-troubleshooting)
 8. [References and Sources](#8-references-and-sources)
+9. [Verification Commands](#9-verification-commands)
 
 ---
 
@@ -713,6 +714,275 @@ make up
 - [The Twelve-Factor App](https://12factor.net/) - Methodology for cloud-native applications
 - [Docker Official Images](https://docs.docker.com/docker-hub/official_images/) - Official images guide
 - [Security Best Practices for WordPress](https://wordpress.org/support/article/hardening-wordpress/)
+
+---
+
+## 9. Verification Commands
+
+This section provides comprehensive commands to verify the proper functioning of all services.
+
+### 9.1 Docker Cleanup Before Testing
+
+**Complete Docker cleanup** (use before fresh testing):
+```bash
+docker stop $(docker ps -qa); docker rm $(docker ps -qa); docker rmi -f $(docker images -qa); docker volume rm $(docker volume ls -q); docker network rm $(docker network ls -q) 2>/dev/null
+```
+
+### 9.2 Project Structure Verification
+
+**Check project structure**:
+```bash
+ls -la /home/dbhujoo/Bureau/inception/
+ls -la /home/dbhujoo/Bureau/inception/srcs/
+```
+
+**Expected elements**:
+- `srcs/` at the root of the repository
+- `Makefile` at the root of the repository
+- `docker_compose.yml` inside `srcs/`
+
+### 9.3 Docker Compose Verification
+
+**Check for forbidden elements**:
+```bash
+# Verify absence of 'network: host'
+grep -i "network.*host" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
+
+# Verify absence of 'links:'
+grep -i "links:" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
+
+# Verify presence of 'networks:'
+grep -i "networks:" /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml
+```
+
+### 9.4 Dockerfile Verification
+
+**Check base images**:
+```bash
+grep -r "^FROM" /home/dbhujoo/Bureau/inception/srcs/requirements/
+```
+
+**Check for forbidden elements**:
+```bash
+# Verify absence of '--link'
+grep -r "\-\-link" /home/dbhujoo/Bureau/inception/
+
+# Verify absence of 'tail -f' in ENTRYPOINT
+grep -r "tail -f" /home/dbhujoo/Bureau/inception/srcs/requirements/
+
+# Verify absence of infinite loops
+grep -rE "sleep infinity|tail -f /dev/null|tail -f /dev/random" /home/dbhujoo/Bureau/inception/
+```
+
+### 9.5 NGINX and TLS Verification
+
+**Check NGINX is only listening on port 443**:
+```bash
+docker ps --format "table {{.Names}}\t{{.Ports}}"
+```
+
+**Test HTTP access (should fail)**:
+```bash
+curl -I http://dbhujoo.42.fr 2>&1
+```
+
+**Test HTTPS access (should work)**:
+```bash
+curl -kI https://dbhujoo.42.fr
+```
+
+**Verify TLS certificate**:
+```bash
+# Check TLS 1.2
+openssl s_client -connect dbhujoo.42.fr:443 -tls1_2 </dev/null 2>/dev/null | grep -E "Protocol|Cipher"
+
+# Check TLS 1.3
+openssl s_client -connect dbhujoo.42.fr:443 -tls1_3 </dev/null 2>/dev/null | grep -E "Protocol|Cipher"
+
+# Check certificate dates
+echo | openssl s_client -connect dbhujoo.42.fr:443 2>/dev/null | openssl x509 -noout -dates
+```
+
+### 9.6 WordPress Verification
+
+**Check WordPress container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps wordpress
+```
+
+**Verify NGINX is NOT in WordPress Dockerfile**:
+```bash
+grep -i nginx /home/dbhujoo/Bureau/inception/srcs/requirements/wordpress/Dockerfile
+```
+
+**Check WordPress volume**:
+```bash
+docker volume ls
+docker volume inspect srcs_wordpress
+ls -la /home/dbhujoo/data/wordpress/
+```
+
+### 9.7 MariaDB Verification
+
+**Check MariaDB container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps mariadb
+```
+
+**Check MariaDB volume**:
+```bash
+docker volume inspect srcs_mariadb
+```
+
+**Connect to database**:
+```bash
+docker exec -it mariadb mariadb -u root -p
+# Enter the root password from secrets/db_root_password.txt
+```
+
+**Database commands** (once connected):
+```sql
+SHOW DATABASES;
+USE wordpress;
+SHOW TABLES;
+SELECT * FROM wp_users;
+```
+
+### 9.8 Network Verification
+
+**List networks**:
+```bash
+docker network ls
+```
+
+**Inspect the inception network**:
+```bash
+docker network inspect srcs_inception
+```
+
+### 9.9 Redis Verification (Bonus)
+
+**Check Redis container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps redis
+```
+
+**Test Redis connection**:
+```bash
+docker exec -it redis redis-cli ping
+# Expected output: PONG
+```
+
+**Check WordPress-Redis integration**:
+```bash
+docker exec -it wordpress wp redis status --allow-root --path=/var/www/wordpress
+```
+
+**View cached keys**:
+```bash
+docker exec -it redis redis-cli keys '*'
+```
+
+### 9.10 FTP Verification (Bonus)
+
+**Check FTP container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps ftp
+```
+
+**Check FTP ports**:
+```bash
+docker ps --format "table {{.Names}}\t{{.Ports}}" | grep ftp
+```
+
+**Test FTP connection**:
+```bash
+lftp -u ftpuser ftp://localhost
+# Enter the FTP password from secrets/ftp_password.txt
+```
+
+### 9.11 Static Site Verification (Bonus)
+
+**Check static-site container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps static-site
+```
+
+**Test access**:
+```bash
+curl -I http://dbhujoo.42.fr:8080/
+```
+
+### 9.12 Adminer Verification (Bonus)
+
+**Check Adminer container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps adminer
+```
+
+**Access via browser**: `https://dbhujoo.42.fr/adminer/`
+
+### 9.13 cAdvisor Verification (Bonus)
+
+**Check cAdvisor container**:
+```bash
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps cadvisor
+```
+
+**Check metrics endpoint**:
+```bash
+curl http://localhost:8081/metrics | head -50
+```
+
+**Access via browser**: `http://localhost:8081`
+
+### 9.14 Persistence Verification
+
+**Procedure after VM reboot**:
+```bash
+# 1. Reboot the VM
+sudo reboot
+
+# 2. After restart, relaunch docker compose
+cd /home/dbhujoo/Bureau/inception && make
+
+# 3. Verify everything is working
+docker compose -f /home/dbhujoo/Bureau/inception/srcs/docker_compose.yml ps
+
+# 4. Test HTTPS access
+curl -kI https://dbhujoo.42.fr
+```
+
+### 9.15 Secrets Verification
+
+**Check that secrets are not hardcoded**:
+```bash
+grep -r "password" --include="*.yml" --include="*.conf" --include="*.sh" /home/dbhujoo/Bureau/inception/
+```
+
+**Expected result**: Passwords should not appear in plain text. The project uses Docker Secrets mounted via `/run/secrets/`.
+
+### 9.16 Configuration Change Test
+
+**Example: Change HTTPS port from 443 to 8443**:
+```bash
+# 1. Edit docker_compose.yml
+# Change: ports: - "443:443"
+# To:     ports: - "8443:443"
+
+# 2. Update WordPress URLs
+docker exec redis redis-cli FLUSHALL
+docker exec wordpress wp option update siteurl 'https://dbhujoo.42.fr:8443' --allow-root --path=/var/www/wordpress
+docker exec wordpress wp option update home 'https://dbhujoo.42.fr:8443' --allow-root --path=/var/www/wordpress
+
+# 3. Rebuild and restart
+cd /home/dbhujoo/Bureau/inception
+make re
+
+# 4. Verify
+docker ps
+curl -kI https://dbhujoo.42.fr:8443
+```
 
 ---
 
